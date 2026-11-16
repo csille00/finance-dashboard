@@ -1,12 +1,15 @@
+# Version-update PRs are off for this fork: each one runs the full test suite,
+# and gems are bumped by hand when merging from we-promise/sure (followed by
+# `nix run .#update-gems`). Raise the limits to turn them back on.
 version: 2
 updates:
   - package-ecosystem: bundler
     directory: "/"
     schedule:
       interval: weekly
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 0
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
       interval: weekly
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 0
