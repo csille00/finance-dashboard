@@ -1,0 +1,131 @@
+name: Deploy
+
+# Push to main -> build the Nix package -> copy it to ellis-server -> activate.
+#
+# The server side is modules/sure.nix in csille00/nixos-config. This job can
+# only add CI-signed paths to the server's store and write one request file;
+# the root-owned sure-activate unit verifies the signature, snapshots the
+# database, migrates, restarts and health-checks, then reports back through a
+# status file this job polls. Rollback of the build is automatic on failure.
+#
+# Pull requests only check that nix/gems matches Gemfile.lock (the full test
+# suite runs in pr.yml).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # One production deploy at a time; a newer push waits rather than racing.
+  group: ${{ github.event_name == 'pull_request' && format('nix-pr-{0}', github.event.pull_request.number) || 'production' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  SERVER: ellisserver@100.67.73.62
+  # ellis-server's SSH host key (also in nixos-config secrets/secrets.nix).
+  SERVER_HOST_KEY: "100.67.73.62 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII44SUTzYYJ7de1rHLxm++m/ZB8in/g4tUS8hjQWKel0"
+  CI_PUBLIC_KEY: "sure-ci-1:WixNq6bfQArlXtztJ20y3x/4X8qqWsXTV31tBfIpwwM="
+
+jobs:
+  gems:
+    name: Nix gemset is current
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v31
+
+      - name: Regenerate nix/gems and compare
+        run: |
+          nix run .#update-gems
+          if ! git diff --exit-code -- nix/gems; then
+            echo "::error::nix/gems is out of date with Gemfile.lock. Run \`nix run .#update-gems\` and commit the result."
+            exit 1
+          fi
+
+  deploy:
+    name: Build and deploy
+    needs: gems
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          # Lets the build reuse earlier CI builds from the server's store
+          # (added as a substituter below) — and only those, since they are
+          # the paths carrying this signature.
+          extra_nix_config: |
+            extra-trusted-public-keys = ${{ env.CI_PUBLIC_KEY }}
+
+      - uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_CLIENT_SECRET }}
+          tags: tag:ci
+
+      - name: Trust the server's host key
+        # System-wide, because the Nix daemon (root) opens the substituter
+        # connection and the runner user opens the copy.
+        run: echo "$SERVER_HOST_KEY" | sudo tee -a /etc/ssh/ssh_known_hosts >/dev/null
+
+      - name: Build
+        id: build
+        run: |
+          out=$(nix build .#sure --print-out-paths -L \
+            --option extra-substituters "ssh-ng://$SERVER")
+          echo "out=$out" >> "$GITHUB_OUTPUT"
+          echo "Built $out"
+
+      - name: Sign
+        env:
+          NIX_SIGNING_KEY: ${{ secrets.NIX_SIGNING_KEY }}
+        run: |
+          key="$RUNNER_TEMP/nix-signing-key"
+          (umask 077; printf '%s' "$NIX_SIGNING_KEY" > "$key")
+          nix store sign --key-file "$key" --recursive "${{ steps.build.outputs.out }}"
+          rm -f "$key"
+
+      - name: Copy to server
+        run: |
+          nix copy --substitute-on-destination \
+            --to "ssh-ng://$SERVER" "${{ steps.build.outputs.out }}"
+
+      - name: Request activation
+        id: request
+        run: |
+          id="${{ github.run_id }}-${{ github.run_attempt }}"
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+          # Written then renamed, so sure-activate never reads half a request.
+          ssh "$SERVER" "printf '%s %s\n' '${{ steps.build.outputs.out }}' '$id' \
+            > /var/lib/sure-deploy/inbox/request.tmp \
+            && mv /var/lib/sure-deploy/inbox/request.tmp /var/lib/sure-deploy/inbox/request"
+
+      - name: Wait for activation
+        run: |
+          id="${{ steps.request.outputs.id }}"
+          for _ in $(seq 1 240); do
+            status=$(ssh "$SERVER" cat /var/lib/sure-deploy/status 2>/dev/null || true)
+            case "$status" in
+              "ok $id "*)
+                echo "Deployed ${{ steps.build.outputs.out }}"
+                exit 0 ;;
+              "failed $id "*)
+                echo "::error::Activation failed; the previous build was restored."
+                ssh "$SERVER" journalctl -u sure-activate -n 80 --no-pager || true
+                exit 1 ;;
+            esac
+            sleep 5
+          done
+          echo "::error::Timed out waiting for sure-activate (status: ${status:-none})"
+          ssh "$SERVER" journalctl -u sure-activate -n 80 --no-pager || true
+          exit 1
