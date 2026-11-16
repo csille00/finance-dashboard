@@ -50,6 +50,7 @@ class BudgetCategoriesController < ApplicationController
     # through Budget.find_or_bootstrap.
     Budget::RolloverCalculator.new(family: @budget.family, user: @budget.user).recompute!
     @budget_category.reload
+    @budget.reload
 
     respond_to do |format|
       format.turbo_stream

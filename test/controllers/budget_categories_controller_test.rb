@@ -53,15 +53,30 @@ class BudgetCategoriesControllerTest < ActionDispatch::IntegrationTest
 
   test "index marks budget form values as privacy-sensitive" do
     parent_form_selector = "##{dom_id(@parent_budget_category, :form)}"
-    uncategorized_form_selector = "##{dom_id(@budget, :uncategorized_budget_category_form)}"
+    total_selector = "##{dom_id(@budget, :allocation_progress)}"
 
     get budget_budget_categories_path(@budget)
 
     assert_response :success
     assert_select "#{parent_form_selector} .privacy-sensitive.privacy-sensitive-interactive input##{dom_id(@parent_budget_category, :budgeted_spending)}"
     assert_select "#{parent_form_selector} p.text-secondary.privacy-sensitive", text: /\/m avg/
-    assert_select "#{uncategorized_form_selector} .privacy-sensitive input[name='uncategorized']"
-    assert_select "#{uncategorized_form_selector} p.text-secondary.privacy-sensitive", text: /\/m avg/
+    assert_select "#{total_selector} p.privacy-sensitive"
+  end
+
+  test "category amounts set the budget total instead of being capped by it" do
+    @budget.update!(budgeted_spending: 100)
+
+    patch budget_budget_category_path(@budget, @parent_budget_category),
+          params: { budget_category: { budgeted_spending: 5000 } },
+          as: :turbo_stream
+
+    assert_response :success
+    @budget.reload
+    assert_equal @budget.allocated_spending, @budget.budgeted_spending
+    assert_operator @budget.budgeted_spending, :>=, 5000
+    assert_equal 0, @budget.available_to_allocate
+    assert_includes @response.body, dom_id(@budget, :allocation_progress)
+    assert_includes @response.body, @budget.budgeted_spending_money.format
   end
 
   test "show localizes the abbreviated budget month and recent transaction dates" do

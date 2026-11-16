@@ -26,10 +26,7 @@ it:
       spent: "%{amount} speso"
     edit:
       setup_title: "Configura il tuo budget"
-      setup_description: "Inserisci le tue entrate mensili e le spese pianificate per configurare il budget."
-      budgeted_spending: "Spese pianificate"
       expected_income: "Entrate previste"
-      autosuggest_title: "Suggerisci automaticamente entrate e spese"
       autosuggest_description: "Si baserà sulla cronologia delle transazioni. L'AI può commettere errori, verifica prima di continuare."
       continue: "Continua"
     name:
@@ -64,11 +61,6 @@ it:
       no_source: "Nessun budget precedente trovato da copiare"
       already_initialized: "Questo budget è già stato configurato"
   budget_categories:
-    allocation_progress:
-      budget_exceeded_html: 'Budget superato di <span class="text-red-500 privacy-sensitive">%{amount}</span>'
-      left_to_allocate: da allocare
-      over_set: "> 100% impostato"
-      percent_set: "%{percent} impostato"
     budget_category_form:
       monthly_average: "%{amount}/mese medio"
       shared_placeholder: Condiviso
@@ -82,7 +74,6 @@ it:
       new_category: "Nuova categoria"
     index:
       title: "Modifica i tuoi budget per categoria"
-      description: "Regola i budget per categoria per impostare limiti di spesa. I fondi non allocati verranno automaticamente assegnati come non categorizzati."
     show:
       category: "Categoria"
       overview: "Panoramica"

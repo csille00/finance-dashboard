@@ -20,7 +20,8 @@ class BudgetsController < ApplicationController
   end
 
   def update
-    @budget.update!(budget_params)
+    @budget.assign_attributes(budget_params)
+    @budget.sync_budgeted_spending_to_allocations!
     redirect_to budget_budget_categories_path(@budget, **budget_owner_query)
   end
 
@@ -54,7 +55,7 @@ class BudgetsController < ApplicationController
     end
 
     def budget_params
-      params.require(:budget).permit(:budgeted_spending, :expected_income)
+      params.require(:budget).permit(:expected_income)
     end
 
     def set_budget

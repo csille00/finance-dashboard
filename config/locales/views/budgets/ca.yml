@@ -1,11 +1,6 @@
 ---
 ca:
   budget_categories:
-    allocation_progress:
-      budget_exceeded_html: 'Pressupost superat en <span class="text-red-500 privacy-sensitive">%{amount}</span>'
-      left_to_allocate: per assignar
-      over_set: "> 100 % assignat"
-      percent_set: "%{percent} assignat"
     budget_category_form:
       monthly_average: "%{amount}/mes (mitjana)"
       shared_placeholder: Compartit
@@ -15,8 +10,6 @@ ca:
     confirm_button:
       confirm: Confirma
     index:
-      description: Ajusta els pressupostos per categoria per establir límits de despesa.
-        Els fons no assignats es marcaran automàticament com a sense categoritzar.
       title: Edita els pressupostos per categoria
     no_categories:
       new_category: Nova categoria
@@ -95,12 +88,8 @@ ca:
     edit:
       autosuggest_description: Es basarà en l'historial de transaccions. La IA pot
         equivocar-se, verifica-ho abans de continuar.
-      autosuggest_title: Suggereix automàticament el pressupost d'ingressos i despeses
-      budgeted_spending: Despesa pressupostada
       continue: Continua
       expected_income: Ingressos esperats
-      setup_description: Introdueix els teus ingressos mensuals i la despesa planificada
-        a sota per configurar el teu pressupost.
       setup_title: Configura el teu pressupost
     name:
       custom_range: "%{start} - %{end_date}"

@@ -19,6 +19,20 @@ class BudgetsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "setup saves expected income and starts the total from the category amounts" do
+    budget = budgets(:one)
+    budget.update!(budgeted_spending: nil)
+
+    # A stale form posting a total is ignored: the categories decide it.
+    patch budget_url(budget), params: { budget: { expected_income: 6500, budgeted_spending: 1 } }
+
+    assert_redirected_to budget_budget_categories_path(budget)
+    budget.reload
+    assert_equal 6500, budget.expected_income
+    assert_equal budget.allocated_spending, budget.budgeted_spending
+    assert budget.initialized?
+  end
+
   test "show renders when the budget has spending but no expected income" do
     budgets(:one).update!(budgeted_spending: 4000, expected_income: nil)
 
@@ -235,9 +249,9 @@ class BudgetsControllerSharingTest < ActionDispatch::IntegrationTest
     sign_in @viewer
 
     patch budget_url(Budget.date_to_param(@date), params: { owner: @owner.id }),
-          params: { budget: { budgeted_spending: 1000, expected_income: 2000 } }
+          params: { budget: { expected_income: 2000 } }
 
     assert_redirected_to budget_budget_categories_url(Budget.date_to_param(@date), owner: @owner.id)
-    assert_equal 1000, Budget.find_by(family: @family, user: @owner).budgeted_spending.to_i
+    assert_equal 2000, Budget.find_by(family: @family, user: @owner).expected_income.to_i
   end
 end

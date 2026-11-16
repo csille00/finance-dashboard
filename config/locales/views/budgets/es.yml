@@ -26,10 +26,7 @@ es:
       spent: '%{amount} gastado'
     edit:
       setup_title: Configura tu presupuesto
-      setup_description: Introduce a continuación tus ingresos mensuales y el gasto previsto para configurar tu presupuesto.
-      budgeted_spending: Gasto presupuestado
       expected_income: Ingresos previstos
-      autosuggest_title: Sugerir automáticamente presupuesto de ingresos y gastos
       autosuggest_description: Se basará en el historial de transacciones. La IA puede cometer errores, verifica antes de continuar.
       continue: Continuar
     name:
@@ -64,11 +61,6 @@ es:
       no_source: No se ha encontrado ningún presupuesto anterior del que copiar
       already_initialized: Este presupuesto ya se ha configurado
   budget_categories:
-    allocation_progress:
-      budget_exceeded_html: Presupuesto superado en <span class="text-red-500 privacy-sensitive">%{amount}</span>
-      left_to_allocate: por asignar
-      over_set: '> 100 % asignado'
-      percent_set: '%{percent} asignado'
     budget_category_form:
       monthly_average: '%{amount}/mes de media'
       shared_placeholder: Compartido
@@ -82,7 +74,6 @@ es:
       new_category: Nueva categoría
     index:
       title: Edita los presupuestos por categoría
-      description: Ajusta los presupuestos por categoría para fijar límites de gasto. Los fondos sin asignar se marcarán automáticamente como sin categoría.
     show:
       category: Categoría
       overview: Resumen

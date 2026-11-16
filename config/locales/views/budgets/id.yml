@@ -29,10 +29,7 @@ id:
       spent: "%{amount} terpakai"
     edit:
       setup_title: "Atur anggaran Anda"
-      setup_description: "Masukkan pendapatan bulanan dan rencana pengeluaran Anda di bawah ini untuk mengatur anggaran."
-      budgeted_spending: "Pengeluaran yang dianggarkan"
       expected_income: "Pemasukan yang diharapkan"
-      autosuggest_title: "Saran otomatis anggaran pemasukan & pengeluaran"
       autosuggest_description: "Ini akan didasarkan pada riwayat transaksi. AI dapat membuat kesalahan, verifikasi sebelum melanjutkan."
       continue: "Lanjutkan"
     name:
@@ -79,11 +76,6 @@ id:
     bills_reserved_unconvertible:
       one: "1 tagihan tidak dicadangkan, belum ada nilai tukar"
       other: "%{count} tagihan tidak dicadangkan, belum ada nilai tukar"
-    allocation_progress:
-      budget_exceeded_html: Anggaran terlampaui sebesar <span class="text-red-500 privacy-sensitive">%{amount}</span>
-      left_to_allocate: sisa untuk dialokasikan
-      over_set: "> 100% ditetapkan"
-      percent_set: "%{percent} ditetapkan"
     budget_category:
       rolled_over: "+%{amount} dialihkan"
     budget_category_form:
@@ -119,7 +111,6 @@ id:
       new_category: "Kategori baru"
     index:
       title: "Edit anggaran kategori Anda"
-      description: "Sesuaikan anggaran kategori untuk menetapkan batas pengeluaran. Dana yang tidak dialokasikan akan secara otomatis ditetapkan sebagai tanpa kategori."
     show:
       category: "Kategori"
       overview: "Ringkasan"

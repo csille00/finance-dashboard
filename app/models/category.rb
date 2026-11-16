@@ -37,6 +37,13 @@ class Category < ApplicationRecord
   # transactions; nullify then runs as the safety net.
   before_destroy :reassign_transactions_to_nothing, prepend: true
 
+  # Budget totals are the sum of top-level category amounts, so deleting or
+  # reparenting a category changes them. Budget ids are captured before
+  # dependent: :destroy removes the rows.
+  before_destroy :remember_budget_ids_for_total_sync, prepend: true
+  after_destroy :sync_budget_totals
+  after_update :sync_budget_totals, if: :saved_change_to_parent_id?
+
   scope :alphabetically, -> { order(:name) }
   scope :recently_used, -> { where.not(last_used_at: nil).order(last_used_at: :desc) }
   scope :alphabetically_by_hierarchy, -> {
@@ -435,6 +442,16 @@ class Category < ApplicationRecord
   end
 
   private
+    def remember_budget_ids_for_total_sync
+      @budget_ids_for_total_sync = budget_categories.pluck(:budget_id)
+    end
+
+    def sync_budget_totals
+      budget_ids = @budget_ids_for_total_sync || budget_categories.pluck(:budget_id)
+      family.budgets.where(id: budget_ids).where.not(budgeted_spending: nil)
+        .find_each(&:sync_budgeted_spending_to_allocations!)
+    end
+
     def propagate_color_to_subcategories
       subcategories.update_all(color: color, updated_at: Time.current)
     end

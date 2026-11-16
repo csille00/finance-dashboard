@@ -286,6 +286,41 @@ class BudgetCategoryTest < ActiveSupport::TestCase
     assert_equal 800, @subcategory_inheriting_bc.available_to_spend
   end
 
+  test "update_budgeted_spending! keeps the budget total equal to the top-level category amounts" do
+    @budget.update!(budgeted_spending: 1)
+
+    @parent_budget_category.update_budgeted_spending!(4000)
+    assert_equal @budget.reload.allocated_spending, @budget.budgeted_spending
+
+    @subcategory_with_limit_bc.update_budgeted_spending!(4500)
+    assert_equal @budget.reload.allocated_spending, @budget.budgeted_spending
+    assert_operator @budget.budgeted_spending, :>=, 4500
+
+    @parent_budget_category.reload.update_budgeted_spending!(4500)
+    assert_equal @budget.reload.allocated_spending, @budget.budgeted_spending
+  end
+
+  test "deleting a parent category keeps the total equal to the remaining top-level amounts" do
+    @parent_budget_category.update_budgeted_spending!(4000)
+
+    @parent_category.destroy!
+
+    @budget.reload
+    assert_equal @budget.allocated_spending, @budget.budgeted_spending
+    assert_operator @budget.budgeted_spending, :<, 4000
+  end
+
+  test "moving a top-level category under a parent keeps the total in sync" do
+    standalone = Category.create!(name: "Test Standalone #{Time.now.to_f}", family: @family)
+    BudgetCategory.create!(budget: @budget, category: standalone, budgeted_spending: 250, currency: "USD")
+    @budget.sync_budgeted_spending_to_allocations!
+
+    standalone.update!(parent: @parent_category)
+
+    @budget.reload
+    assert_equal @budget.allocated_spending, @budget.budgeted_spending
+  end
+
   test "update_budgeted_spending! preserves positive parent reserve when subcategory becomes individual" do
     @subcategory_inheriting_bc.update_budgeted_spending!(200)
 

@@ -29,10 +29,7 @@ pt-PT:
       spent: "%{amount} gasto"
     edit:
       setup_title: "Configure o seu orçamento"
-      setup_description: "Introduza os seus rendimentos mensais e os gastos planeados abaixo para configurar o seu orçamento."
-      budgeted_spending: "Gastos orçamentados"
       expected_income: "Rendimento esperado"
-      autosuggest_title: "Sugestão automática de orçamento de rendimentos e gastos"
       autosuggest_description: "Isto será baseado no histórico de transações. A IA pode cometer erros, verifique antes de continuar."
       continue: "Continuar"
     name:
@@ -74,11 +71,6 @@ pt-PT:
       no_source: "Não foi encontrado nenhum orçamento anterior para copiar"
       already_initialized: "Este orçamento já foi configurado"
   budget_categories:
-    allocation_progress:
-      budget_exceeded_html: 'Orçamento excedido em <span class="text-red-500 privacy-sensitive">%{amount}</span>'
-      left_to_allocate: restante para afetar
-      over_set: "> 100% definido"
-      percent_set: "%{percent} definido"
     budget_category:
       rolled_over: "+%{amount} transitados"
     budget_category_form:
@@ -114,7 +106,6 @@ pt-PT:
       new_category: "Nova categoria"
     index:
       title: "Edite os orçamentos das suas categorias"
-      description: "Ajuste os orçamentos das categorias para definir limites de gastos. Os fundos não afetados serão atribuídos automaticamente como por categorizar."
     show:
       category: "Categoria"
       overview: "Visão geral"

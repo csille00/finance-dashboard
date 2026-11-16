@@ -191,6 +191,7 @@ class BudgetCategory < ApplicationRecord
       update!(budgeted_spending: new_budgeted_spending)
 
       sync_parent_budgeted_spending!(previous_budgeted_spending:) if subcategory?
+      budget.sync_budgeted_spending_to_allocations!
     end
   end
 

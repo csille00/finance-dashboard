@@ -21,7 +21,7 @@
             icon: "pencil",
             icon_position: "right",
             size: "sm",
-            href: edit_budget_path(budget, **budget_owner_query)
+            href: budget_budget_categories_path(budget, **budget_owner_query)
           ) %>
         <% else %>
           <p class="text-secondary text-sm"><%= t(".of_budget", amount: budget.budgeted_spending_money.format) %></p>

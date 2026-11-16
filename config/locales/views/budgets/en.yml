@@ -29,10 +29,9 @@ en:
       spent: "%{amount} spent"
     edit:
       setup_title: "Setup your budget"
-      setup_description: "Enter your monthly earnings and planned spending below to setup your budget."
-      budgeted_spending: "Budgeted spending"
+      income_description: "Enter your expected monthly earnings. Your spending budget is the total of the category amounts you set in the next step."
       expected_income: "Expected income"
-      autosuggest_title: "Autosuggest income & spending budget"
+      autosuggest_income_title: "Autosuggest income"
       autosuggest_description: "This will be based on transaction history. AI can make mistakes, verify before continuing."
       continue: "Continue"
     name:
@@ -80,10 +79,8 @@ en:
       one: "1 bill is not reserved, no exchange rate available"
       other: "%{count} bills are not reserved, no exchange rate available"
     allocation_progress:
-      budget_exceeded_html: 'Budget exceeded by <span class="text-red-500 privacy-sensitive">%{amount}</span>'
-      left_to_allocate: left to allocate
-      over_set: "> 100% set"
-      percent_set: "%{percent} set"
+      total_label: "Monthly budget"
+      total_hint: "The total of your category amounts"
     budget_category:
       rolled_over: "+%{amount} rolled over"
     budget_category_form:
@@ -119,7 +116,7 @@ en:
       new_category: "New category"
     index:
       title: "Edit your category budgets"
-      description: "Adjust category budgets to set spending limits. Unallocated funds will be automatically assigned as uncategorized."
+      categories_description: "Set an amount for each category. Your monthly budget is their total."
     show:
       category: "Category"
       overview: "Overview"

@@ -1,11 +1,6 @@
 ---
 pl:
   budget_categories:
-    allocation_progress:
-      budget_exceeded_html: Budżet przekroczony o <span class="text-red-500 privacy-sensitive">%{amount}</span>
-      left_to_allocate: do przydzielenia
-      over_set: "> 100% przydzielone"
-      percent_set: "%{percent} przydzielone"
     bills_reserved: "%{amount} zarezerwowane na rachunki"
     bills_reserved_unconvertible:
       few: "%{count} rachunki nie są zarezerwowane, brak dostępnego kursu wymiany"
@@ -23,8 +18,6 @@ pl:
     confirm_button:
       confirm: Potwierdź
     index:
-      description: Dostosuj budżety kategorii, aby ustawić limity wydatków. Nieprzydzielone
-        środki zostaną automatycznie przypisane jako bez kategorii.
       title: Edytuj budżety kategorii
     move:
       amount_label: Kwota
@@ -107,12 +100,8 @@ pl:
     edit:
       autosuggest_description: Będzie oparte na historii transakcji. AI może się mylić,
         sprawdź przed kontynuowaniem.
-      autosuggest_title: Automatyczna sugestia budżetu przychodów i wydatków
-      budgeted_spending: Zabudżetowane wydatki
       continue: Kontynuuj
       expected_income: Oczekiwany przychód
-      setup_description: Wpisz poniżej swoje miesięczne zarobki i planowane wydatki,
-        żeby skonfigurować budżet.
       setup_title: Skonfiguruj budżet
     name:
       custom_range: "%{start} do %{end_date}"

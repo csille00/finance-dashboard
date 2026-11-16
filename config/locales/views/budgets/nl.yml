@@ -29,10 +29,7 @@ nl:
       spent: "%{amount} uitgegeven"
     edit:
       setup_title: "Stel uw budget in"
-      setup_description: "Voer hieronder uw maandelijkse inkomsten en geplande uitgaven in om uw budget in te stellen."
-      budgeted_spending: "Gebudgetteerde uitgaven"
       expected_income: "Verwachte inkomsten"
-      autosuggest_title: "Inkomsten- en uitgavenbudget automatisch voorstellen"
       autosuggest_description: "Dit is gebaseerd op de transactiegeschiedenis. AI kan fouten maken, controleer voordat u doorgaat."
       continue: "Doorgaan"
     name:
@@ -79,11 +76,6 @@ nl:
     bills_reserved_unconvertible:
       one: "1 vaste last is niet gereserveerd, geen wisselkoers beschikbaar"
       other: "%{count} vaste lasten zijn niet gereserveerd, geen wisselkoers beschikbaar"
-    allocation_progress:
-      budget_exceeded_html: "Budget overschreden met <span class=\"text-red-500 privacy-sensitive\">%{amount}</span>"
-      left_to_allocate: "nog toe te wijzen"
-      over_set: "> 100% ingesteld"
-      percent_set: "%{percent} ingesteld"
     budget_category:
       rolled_over: "+%{amount} overgedragen"
     budget_category_form:
@@ -119,7 +111,6 @@ nl:
       new_category: "Nieuwe categorie"
     index:
       title: "Uw categoriebudgetten bewerken"
-      description: "Pas categoriebudgetten aan om uitgavenlimieten in te stellen. Niet-toegewezen middelen worden automatisch toegewezen aan zonder categorie."
     show:
       category: "Categorie"
       overview: "Overzicht"

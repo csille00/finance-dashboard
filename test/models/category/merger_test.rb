@@ -49,6 +49,22 @@ class Category::MergerTest < ActiveSupport::TestCase
     assert_not Category.exists?(source.id)
   end
 
+  test "merging a subcategory into a top-level category adds its amount to the budget total" do
+    target = create_category(@family, "Total Merge Target")
+    parent = create_category(@family, "Total Merge Parent")
+    source = create_category(@family, "Total Merge Child", parent: parent)
+    budget = create_budget(@family, 1.month.from_now.to_date.beginning_of_month)
+    create_budget_category(budget, target, 8)
+    create_budget_category(budget, parent, 40)
+    create_budget_category(budget, source, 30)
+    budget.sync_budgeted_spending_to_allocations!
+    assert_equal 48, budget.reload.budgeted_spending
+
+    Category::Merger.new(family: @family, target_category: target, source_categories: [ source ]).merge!
+
+    assert_equal 78, budget.reload.budgeted_spending
+  end
+
   test "merging categories invalidates entries_cache_version" do
     target = create_category(@family, "Cache Merge Target")
     source = create_category(@family, "Cache Merge Source")
