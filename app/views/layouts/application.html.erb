@@ -42,12 +42,13 @@ end %>
         </div>
       <% end %>
 
-      <%= render(
-        "accounts/account_sidebar_tabs",
-        family: Current.family,
-        active_tab: @account_group_tab,
-        mobile: true
-      ) %>
+      <%# Lazy: the drawer stays display:none until opened, so desktop pages never
+          fetch this second copy of the account sidebar. %>
+      <%= turbo_frame_tag "mobile_account_sidebar",
+            src: account_sidebar_path(path: request.path, account_sidebar_tab: params[:account_sidebar_tab].presence),
+            loading: :lazy,
+            refresh: :morph,
+            target: "_top" %>
     </div>
 
     <%# MOBILE - Top nav %>

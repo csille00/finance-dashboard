@@ -6,6 +6,11 @@ default: &default
   port: <%= ENV.fetch("DB_PORT") { "5432" } %>
   username: <%= ENV.fetch("POSTGRES_USER") { nil } %>
   password: <%= ENV.fetch("POSTGRES_PASSWORD") { nil } %>
+  variables:
+    # The exchange-rate subqueries in the aggregate SQL inflate cost estimates
+    # past Postgres' JIT thresholds, and compiling them takes far longer than
+    # running them (around 500ms vs 15ms for the transactions totals).
+    jit: "off"
 
 development:
   <<: *default

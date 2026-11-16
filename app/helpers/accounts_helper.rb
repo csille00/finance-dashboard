@@ -32,8 +32,10 @@ module AccountsHelper
   # Returns the account id segment from `/accounts/<id>(/...)?`, or nil.
   # Used as a cache-key component so the sidebar's active-link styling is
   # correct without busting the cache for every unrelated path change.
+  # The mobile sidebar loads in its own request, which passes along the path of
+  # the page it was opened on as @sidebar_page_path.
   def sidebar_active_account_id
-    match = request.path.match(%r{\A/accounts/([\w-]+)})
+    match = (@sidebar_page_path || request.path).match(%r{\A/accounts/([\w-]+)})
     match && match[1]
   end
 
@@ -70,7 +72,7 @@ module AccountsHelper
       .pick(Arel.sql("count(*)"), Arel.sql("max(account_providers.updated_at)"))
 
     [
-      family.build_cache_key("account_sidebar_tabs_v7", invalidate_on_data_updates: true),
+      family.build_cache_key("account_sidebar_tabs_v8", invalidate_on_data_updates: true),
       family.manual_reconciliation?,
       Current.user&.id,
       shares_version,
