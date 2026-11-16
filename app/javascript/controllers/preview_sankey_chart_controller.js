@@ -2,7 +2,10 @@ import { Controller } from "@hotwired/stimulus";
 import * as d3 from "d3";
 import { sankey, sankeyCenter } from "d3-sankey";
 import { formatCashFlowCurrency } from "utils/cash_flow_chart_data";
-import { CHART_TOOLTIP_CLASSES } from "utils/chart_tooltip";
+import {
+  CHART_TOOLTIP_CLASSES,
+  positionChartTooltip,
+} from "utils/chart_tooltip";
 import { sankeyLabelOnRight } from "utils/sankey_align";
 import { hiddenSankeyLabels } from "utils/sankey_labels";
 import { sankeyNodeHasChildren, zoomSankeyData } from "utils/sankey_zoom";
@@ -711,27 +714,16 @@ export default class extends Controller {
       : valueLine;
 
     const isInDialog = !!this.element.closest("dialog");
-    const x = isInDialog ? event.clientX : event.pageX;
-    const y = isInDialog ? event.clientY : event.pageY;
 
     this.tooltip
       .html(content)
-      .style("position", isInDialog ? "fixed" : "absolute")
-      .style("left", `${x + 10}px`)
-      .style("top", `${y - 10}px`)
-      .transition()
-      .duration(100)
-      .style("opacity", 1);
+      .style("position", isInDialog ? "fixed" : "absolute");
+    positionChartTooltip(this.tooltip.node(), event);
+    this.tooltip.transition().duration(100).style("opacity", 1);
   }
 
   #updateTooltipPosition(event) {
-    if (this.tooltip) {
-      const isInDialog = !!this.element.closest("dialog");
-      const x = isInDialog ? event.clientX : event.pageX;
-      const y = isInDialog ? event.clientY : event.pageY;
-
-      this.tooltip?.style("left", `${x + 10}px`).style("top", `${y - 10}px`);
-    }
+    if (this.tooltip) positionChartTooltip(this.tooltip.node(), event);
   }
 
   #hideTooltip() {

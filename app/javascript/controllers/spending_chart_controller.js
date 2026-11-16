@@ -1,6 +1,9 @@
 import { Controller } from "@hotwired/stimulus";
 import * as d3 from "d3";
-import { CHART_TOOLTIP_CLASSES } from "utils/chart_tooltip";
+import {
+  CHART_TOOLTIP_CLASSES,
+  positionChartTooltip,
+} from "utils/chart_tooltip";
 
 // Cumulative spending chart for the dashboard "spending" widget: the selected
 // month's running total (green, ending today while the month is in progress)
@@ -231,13 +234,6 @@ export default class extends Controller {
         const previousPoint = previousByDay.get(day);
         const labelPoint = currentPoint || previousPoint;
 
-        const estimatedTooltipWidth = 220;
-        const pageWidth = document.body.clientWidth;
-        const tooltipX = event.pageX + 10;
-        const overflowX = tooltipX + estimatedTooltipWidth - pageWidth;
-        const adjustedX =
-          overflowX > 0 ? event.pageX - overflowX - 20 : tooltipX;
-
         group.selectAll(".guideline").remove();
         group.selectAll(".data-point-circle").remove();
 
@@ -268,9 +264,8 @@ export default class extends Controller {
 
         tooltip
           .html(this._tooltipTemplate(labelPoint, currentPoint, previousPoint))
-          .style("opacity", 1)
-          .style("left", `${adjustedX}px`)
-          .style("top", `${event.pageY - 10}px`);
+          .style("opacity", 1);
+        positionChartTooltip(tooltip.node(), event);
       })
       .on("mouseout", (event) => {
         const hoveringOnGuideline =

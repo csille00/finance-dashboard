@@ -1,6 +1,9 @@
 import { Controller } from "@hotwired/stimulus";
 import * as d3 from "d3";
-import { CHART_TOOLTIP_CLASSES } from "utils/chart_tooltip";
+import {
+  CHART_TOOLTIP_CLASSES,
+  positionChartTooltip,
+} from "utils/chart_tooltip";
 
 const parseLocalDate = d3.timeParse("%Y-%m-%d");
 
@@ -30,9 +33,9 @@ export default class extends Controller {
   // y-axis domain tuning. Both are relative to the data, so the scale is
   // resolution-independent: a chart looks the same on a phone and a 4K
   // display — only pixel density changes.
-  _yAxisPadding = 0.12;      // breathing room above and below the series
-  _yAxisMinRelSpan = 0.015;  // smallest movement allowed to fill the chart,
-                             // as a fraction of the average balance  
+  _yAxisPadding = 0.12; // breathing room above and below the series
+  _yAxisMinRelSpan = 0.015; // smallest movement allowed to fill the chart,
+  // as a fraction of the average balance
 
   connect() {
     this._install();
@@ -389,12 +392,12 @@ export default class extends Controller {
   // whatever fraction-of-a-day pixel the mouse happens to be over.
   _handleDragSelectMove(event) {
     const sourceEvent = event.sourceEvent;
-    if (!sourceEvent || typeof sourceEvent.pageX !== "number") return;
+    if (!sourceEvent || typeof sourceEvent.clientX !== "number") return;
 
     const [xPos] = d3.pointer(sourceEvent, this._d3Group.node());
     const datum = this._nearestDataPointForPixel(xPos);
 
-    this._renderTooltipAt(datum, sourceEvent.pageX, sourceEvent.pageY);
+    this._renderTooltipAt(datum, sourceEvent);
   }
 
   _handleDragSelectEnd(event) {
@@ -464,7 +467,7 @@ export default class extends Controller {
         const [xPos] = d3.pointer(event);
         const datum = this._nearestDataPointForPixel(xPos);
 
-        this._renderTooltipAt(datum, event.pageX, event.pageY);
+        this._renderTooltipAt(datum, event);
       })
       .on("mouseout", (event) => {
         const hoveringOnGuideline =
@@ -476,13 +479,7 @@ export default class extends Controller {
       });
   }
 
-  _renderTooltipAt(datum, pageX, pageY) {
-    const estimatedTooltipWidth = 250;
-    const pageWidth = document.body.clientWidth;
-    const tooltipX = pageX + 10;
-    const overflowX = tooltipX + estimatedTooltipWidth - pageWidth;
-    const adjustedX = overflowX > 0 ? pageX - overflowX - 20 : tooltipX;
-
+  _renderTooltipAt(datum, pointer) {
     const xPercent = this._d3XScale(datum.date) / this._d3ContainerWidth;
 
     this._setTrendlineSplitAt(xPercent);
@@ -526,12 +523,13 @@ export default class extends Controller {
     // Render tooltip. Optional, to match _hideTooltip: the brush drives this
     // method unconditionally, so a selectable chart with use_tooltip=false has
     // no tooltip node — but it still gets the guideline and circles above.
+    if (!this._d3Tooltip) return;
+
     this._d3Tooltip
-      ?.html(this._tooltipTemplate(datum))
+      .html(this._tooltipTemplate(datum))
       .style("opacity", 1)
-      .style("z-index", 999)
-      .style("left", `${adjustedX}px`)
-      .style("top", `${pageY - 10}px`);
+      .style("z-index", 999);
+    positionChartTooltip(this._d3Tooltip.node(), pointer);
   }
 
   _hideTooltip() {
