@@ -526,9 +526,12 @@ class SimplefinItem::Importer
       Rails.logger.info "SimpleFin chunked sync completed: #{chunk_count} chunks processed, #{total_accounts_imported} account records, #{total_new_transactions} new transactions#{stopped_early ? " (stopped early)" : ""}"
     end
 
-    # Count total transactions in linked SimpleFIN accounts (for adaptive chunking)
+    # Count total transactions in linked SimpleFIN accounts (for adaptive chunking).
+    # Reloads every time: import_account saves through find_or_initialize_by,
+    # which returns fresh records, so the association's cached ones would keep
+    # their pre-chunk payloads and every chunk would look empty.
     def count_linked_transactions
-      simplefin_item.simplefin_accounts
+      simplefin_item.simplefin_accounts.reload
         .select { |sfa| sfa.current_account.present? }
         .sum { |sfa| sfa.raw_transactions_payload.to_a.size }
     end
