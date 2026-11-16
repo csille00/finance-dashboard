@@ -310,6 +310,30 @@ class BudgetCategoryTest < ActiveSupport::TestCase
     assert_operator @budget.budgeted_spending, :<, 4000
   end
 
+  test "deleting a parent resyncs months where only its subcategories have rows" do
+    @parent_budget_category.destroy!
+    @subcategory_with_limit_bc.update!(budgeted_spending: 300)
+    @budget.sync_budgeted_spending_to_allocations!
+    assert_equal 0, @budget.reload.budgeted_spending
+
+    @parent_category.destroy!
+
+    @budget.reload
+    assert_equal @budget.allocated_spending, @budget.budgeted_spending
+    assert_operator @budget.budgeted_spending, :>=, 300
+  end
+
+  test "sync_budgeted_spending_to_allocations! persists the total even when the in-memory value is stale" do
+    @budget.sync_budgeted_spending_to_allocations!
+    stale = Budget.find(@budget.id)
+    synced_total = stale.budgeted_spending
+    Budget.where(id: @budget.id).update_all(budgeted_spending: synced_total + 999)
+
+    stale.sync_budgeted_spending_to_allocations!
+
+    assert_equal synced_total, @budget.reload.budgeted_spending
+  end
+
   test "moving a top-level category under a parent keeps the total in sync" do
     standalone = Category.create!(name: "Test Standalone #{Time.now.to_f}", family: @family)
     BudgetCategory.create!(budget: @budget, category: standalone, budgeted_spending: 250, currency: "USD")

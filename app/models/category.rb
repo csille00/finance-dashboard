@@ -443,7 +443,10 @@ class Category < ApplicationRecord
 
   private
     def remember_budget_ids_for_total_sync
-      @budget_ids_for_total_sync = budget_categories.pluck(:budget_id)
+      # Subcategories are promoted by dependent: :nullify without callbacks,
+      # so their months need a resync too.
+      @budget_ids_for_total_sync = BudgetCategory.where(category_id: [ id, *subcategories.ids ])
+                                                 .distinct.pluck(:budget_id)
     end
 
     def sync_budget_totals
