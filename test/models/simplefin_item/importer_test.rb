@@ -251,6 +251,21 @@ class SimplefinItem::ImporterTest < ActiveSupport::TestCase
     end
   end
 
+  test "the chunked history import keeps going while chunks still add transactions" do
+    travel_to Time.zone.parse("2026-11-07 12:00") do
+      @item.stubs(:sync_start_date).returns(300.days.ago.to_date)
+      link_simplefin_account("sf_history_long")
+      provider, ranges = recording_provider(account_id: "sf_history_long")
+
+      SimplefinItem::Importer.new(@item, simplefin_provider: provider).send(:import_with_chunked_history)
+
+      # Seven 45-day chunks reach 300 days back. Stopping after three would
+      # mean the new transactions were not counted.
+      assert_equal 7, ranges.size
+      assert_equal 300.days.ago.beginning_of_day, ranges.last.first
+    end
+  end
+
   test "the chunked history import looks at least 120 days back before giving up on an empty account" do
     provider, ranges = recording_provider
 
