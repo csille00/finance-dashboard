@@ -503,7 +503,11 @@ class Budget < ApplicationRecord
   # Writers take this before any of the budget's category rows so concurrent
   # category edits serialize on it in a consistent order.
   def lock_row!
-    self.class.where(id: id).lock.pick(:id)
+    self.class.lock_rows!([ id ])
+  end
+
+  def self.lock_rows!(ids)
+    where(id: ids).order(:id).lock.pluck(:id)
   end
 
   def allocated_percent

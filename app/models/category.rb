@@ -447,6 +447,9 @@ class Category < ApplicationRecord
       # so their months need a resync too.
       @budget_ids_for_total_sync = BudgetCategory.where(category_id: [ id, *subcategories.ids ])
                                                  .distinct.pluck(:budget_id)
+      # Before dependent: :destroy locks the allocation rows, to keep the
+      # budget-then-category lock order used by allocation edits.
+      Budget.lock_rows!(@budget_ids_for_total_sync)
     end
 
     def sync_budget_totals

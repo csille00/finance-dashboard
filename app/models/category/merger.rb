@@ -28,6 +28,7 @@ class Category::Merger
   private
     def merge_sources!
       affected_budget_ids = family.budget_categories.where(category_id: source_categories.map(&:id)).distinct.pluck(:budget_id)
+      Budget.lock_rows!(affected_budget_ids)
 
       source_categories.each do |source|
         Transaction.reassign_category!(family.transactions.where(category_id: source.id), target_category.id)
