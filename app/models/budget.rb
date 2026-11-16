@@ -487,16 +487,23 @@ class Budget < ApplicationRecord
   # can never over-allocate the budget.
   def sync_budgeted_spending_to_allocations!
     self.class.transaction do
-      # Row lock rather than lock!, which would reload and drop unsaved
-      # attributes. Concurrent category edits then sum each other's commits.
-      self.class.where(id: id).lock.pick(:id)
+      lock_row!
 
-      total = BudgetCategory.joins(:category)
-                            .where(budget_id: id, categories: { parent_id: nil })
-                            .sum(:budgeted_spending)
-
-      update!(budgeted_spending: total)
+      self.budgeted_spending = BudgetCategory.joins(:category)
+                                             .where(budget_id: id, categories: { parent_id: nil })
+                                             .sum(:budgeted_spending)
+      # The in-memory total may be stale, so a recomputed value equal to it can
+      # still differ from the stored one.
+      budgeted_spending_will_change!
+      save!
     end
+  end
+
+  # Row lock rather than lock!, which would reload and drop unsaved attributes.
+  # Writers take this before any of the budget's category rows so concurrent
+  # category edits serialize on it in a consistent order.
+  def lock_row!
+    self.class.where(id: id).lock.pick(:id)
   end
 
   def allocated_percent

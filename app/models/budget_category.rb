@@ -75,7 +75,8 @@ class BudgetCategory < ApplicationRecord
         # update_budgeted_spending! locks its own row and, for a
         # subcategory, its parent. Two simultaneous moves in opposite
         # directions would each hold what the other wants, so every row this
-        # touches is locked up front, by ascending id.
+        # touches is locked up front, by ascending id, after the budget row.
+        from.budget.lock_row!
         where(id: lock_ids_for_move(from, to)).order(:id).lock.to_a
 
         from.reload
@@ -185,6 +186,7 @@ class BudgetCategory < ApplicationRecord
 
   def update_budgeted_spending!(new_budgeted_spending)
     self.class.transaction do
+      budget.lock_row!
       lock!
 
       previous_budgeted_spending = budgeted_spending || 0
