@@ -26,10 +26,7 @@ zh-TW:
       spent: 已花費 %{amount}
     edit:
       setup_title: 設定您的預算
-      setup_description: 在下方輸入您每月的收入與計畫支出，以完成預算設定。
-      budgeted_spending: 預算支出
       expected_income: 預期收入
-      autosuggest_title: 自動建議收入與支出預算
       autosuggest_description: 這會依據您的交易紀錄推算。AI 可能會出錯，請確認後再繼續。
       continue: 繼續
     name:
@@ -64,11 +61,6 @@ zh-TW:
       no_source: 找不到可以複製的先前預算
       already_initialized: 這份預算已經設定過了
   budget_categories:
-    allocation_progress:
-      budget_exceeded_html: 預算超支 <span class="text-red-500 privacy-sensitive">%{amount}</span>
-      left_to_allocate: 尚待分配
-      over_set: 已設定 > 100%
-      percent_set: 已設定 %{percent}
     budget_category_form:
       monthly_average: 平均每月 %{amount}
       shared_placeholder: 共享
@@ -82,7 +74,6 @@ zh-TW:
       new_category: 新增分類
     index:
       title: 編輯您的分類預算
-      description: 調整各分類的預算來設定支出上限。未分配的金額會自動歸為未分類。
     show:
       category: 分類
       overview: 概覽

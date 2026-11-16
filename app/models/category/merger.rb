@@ -27,6 +27,9 @@ class Category::Merger
 
   private
     def merge_sources!
+      affected_budget_ids = family.budget_categories.where(category_id: source_categories.map(&:id)).distinct.pluck(:budget_id)
+      Budget.lock_rows!(affected_budget_ids)
+
       source_categories.each do |source|
         Transaction.reassign_category!(family.transactions.where(category_id: source.id), target_category.id)
         merge_budget_categories(source)
@@ -34,6 +37,11 @@ class Category::Merger
         family.categories.find(source.id).destroy!
         @merged_count += 1
       end
+
+      # Merging and reparenting can move amounts between top-level and
+      # subcategory rows, which changes the derived monthly total.
+      family.budgets.where(id: affected_budget_ids).where.not(budgeted_spending: nil)
+        .find_each(&:sync_budgeted_spending_to_allocations!)
     end
 
     def validate_category_belongs_to_family!(category, label)

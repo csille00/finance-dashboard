@@ -26,10 +26,7 @@ uk:
       spent: "%{amount} витрачено"
     edit:
       setup_title: "Налаштуйте свій бюджет"
-      setup_description: "Введіть свої щомісячні доходи та заплановані витрати нижче, щоб налаштувати свій бюджет."
-      budgeted_spending: "Заплановані витрати"
       expected_income: "Очікуваний дохід"
-      autosuggest_title: "Автоматично запропонувати бюджет доходів і витрат"
       autosuggest_description: "Це буде базуватися на історії транзакцій. ШІ може робити помилки, перевірте перед продовженням."
       continue: "Продовжити"
     name:
@@ -74,11 +71,6 @@ uk:
       free: Справді вільні
       goals_link: Переглянути цілі
   budget_categories:
-    allocation_progress:
-      budget_exceeded_html: 'Бюджет перевищено на <span class="text-red-500 privacy-sensitive">%{amount}</span>'
-      left_to_allocate: "залишилося розподілити"
-      over_set: "> 100% встановлено"
-      percent_set: "%{percent} встановлено"
     budget_category_form:
       monthly_average: "%{amount}/міс. сер."
       shared_placeholder: "Спільний"
@@ -94,7 +86,6 @@ uk:
       new_category: "Нова категорія"
     index:
       title: "Редагуйте бюджети категорій"
-      description: "Налаштуйте бюджети категорій, щоб встановити ліміти витрат. Нерозподілені кошти будуть автоматично віднесені до категорії 'Без категорії'."
     show:
       category: "Категорія"
       overview: "Огляд"

@@ -23,10 +23,7 @@ hu:
       spent: "%{amount} elköltve"
     edit:
       setup_title: "Állítsd be a költségvetésed"
-      setup_description: "Add meg a havi bevételeidet és tervezett kiadásaidat a költségvetés beállításához."
-      budgeted_spending: "Tervezett kiadások"
       expected_income: "Várható bevétel"
-      autosuggest_title: "Bevételi és kiadási keret automatikus javaslata"
       autosuggest_description: "Ez a tranzakcióelőzmények alapján készül. Az AI hibázhat, ellenőrizd folytatás előtt."
       continue: "Folytatás"
     name:
@@ -69,7 +66,6 @@ hu:
       new_category: "Új kategória"
     index:
       title: "Kategóriakereteid szerkesztése"
-      description: "Állítsd be a kategóriakereteket a kiadási limitek meghatározásához. A fel nem osztott összegek automatikusan kategorizálatlanként kerülnek hozzárendelésre."
     show:
       category: "Kategória"
       overview: "Áttekintés"

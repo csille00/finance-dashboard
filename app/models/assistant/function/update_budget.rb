@@ -8,30 +8,29 @@ class Assistant::Function::UpdateBudget < Assistant::Function
 
     def description
       <<~INSTRUCTIONS
-        Updates the user's monthly budget: total budgeted spending, expected income,
-        and/or per-category budgeted amounts.
+        Updates the user's monthly budget: expected income and/or per-category
+        budgeted amounts. Total budgeted spending is always the sum of the
+        top-level category amounts, so it changes by setting categories.
 
         Call get_budget first to see current amounts and exact category names.
         Amounts are plain non-negative numbers in the family's currency. Only the
         fields and categories you pass are changed. Setting a subcategory's amount
         keeps its parent's total in sync automatically. The "Uncategorized" bucket
-        cannot be set directly — it is the unallocated remainder of total budgeted
-        spending.
+        cannot be set directly.
 
         Parameters:
         - `month` (optional): "YYYY-MM" or "MMM-YYYY". Defaults to the current month.
-        - `budgeted_spending` (optional): total planned spending for the month.
         - `expected_income` (optional): expected income for the month.
         - `categories` (optional): array of { category: <name or id>, amount: <number> }.
 
-        At least one of budgeted_spending, expected_income, or categories is required.
+        At least one of expected_income or categories is required.
 
-        Example (set the total and two category allocations for August 2026):
+        Example (set income and two category allocations for August 2026):
 
         ```
         update_budget({
           month: "2026-08",
-          budgeted_spending: 6500,
+          expected_income: 6500,
           categories: [
             { category: "Groceries", amount: 900 },
             { category: "Dining Out", amount: 250 }
@@ -52,11 +51,6 @@ class Assistant::Function::UpdateBudget < Assistant::Function
         month: {
           type: "string",
           description: "Target month in YYYY-MM or MMM-YYYY format. Defaults to the current month."
-        },
-        budgeted_spending: {
-          type: "number",
-          minimum: 0,
-          description: "Total planned spending for the month, in the family currency."
         },
         expected_income: {
           type: "number",
@@ -88,9 +82,13 @@ class Assistant::Function::UpdateBudget < Assistant::Function
   end
 
   def call(params = {})
+    if params.key?("budgeted_spending")
+      return error("invalid_params", "budgeted_spending is the sum of the top-level category amounts and cannot be set directly. Set category amounts instead.")
+    end
+
     category_changes = Array(params["categories"])
-    unless params.key?("budgeted_spending") || params.key?("expected_income") || category_changes.any?
-      return error("no_changes", "Provide at least one of budgeted_spending, expected_income, or categories.")
+    unless params.key?("expected_income") || category_changes.any?
+      return error("no_changes", "Provide at least one of expected_income or categories.")
     end
 
     start_date = resolve_month_start(params["month"])
@@ -99,7 +97,6 @@ class Assistant::Function::UpdateBudget < Assistant::Function
     end
 
     attrs = {}
-    attrs[:budgeted_spending] = parse_amount!(params["budgeted_spending"], "budgeted_spending") if params.key?("budgeted_spending")
     attrs[:expected_income] = parse_amount!(params["expected_income"], "expected_income") if params.key?("expected_income")
 
     budget = nil
@@ -108,10 +105,6 @@ class Assistant::Function::UpdateBudget < Assistant::Function
     # leave a newly created (or half-updated) budget behind.
     Budget.transaction do
       budget = Budget.find_or_bootstrap(family, start_date: start_date, user: user)
-
-      if attrs.key?(:budgeted_spending) && !attrs.key?(:expected_income) && budget.expected_income.nil?
-        attrs[:expected_income] = 0
-      end
 
       budget.update!(attrs) if attrs.any?
 
@@ -166,7 +159,7 @@ class Assistant::Function::UpdateBudget < Assistant::Function
 
       if category.nil?
         if Category.all_uncategorized_names.any? { |name| name.casecmp?(ref) }
-          raise Assistant::Error, "'#{ref}' is the unallocated remainder of budgeted_spending and cannot be set directly. Adjust budgeted_spending or category amounts instead."
+          raise Assistant::Error, "'#{ref}' is not a budget category and cannot be set directly. Set other category amounts instead."
         end
         raise Assistant::Error, "Category '#{ref}' not found. Use get_categories to list categories."
       end

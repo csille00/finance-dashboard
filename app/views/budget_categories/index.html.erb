@@ -10,7 +10,7 @@
     <div class="text-center space-y-2">
       <h1 class="text-3xl text-primary font-medium"><%= t(".title") %></h1>
       <p class="text-secondary text-sm max-w-md mx-auto">
-        <%= t(".description") %>
+        <%= t(".categories_description") %>
       </p>
     </div>
 
@@ -41,8 +41,6 @@
                 </div>
               </div>
             <% end %>
-
-            <%= render "budget_categories/uncategorized_budget_category_form", budget: @budget %>
           </div>
 
           <%= render "budget_categories/confirm_button", budget: @budget %>

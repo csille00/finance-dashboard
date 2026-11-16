@@ -26,10 +26,7 @@ vi:
       spent: "%{amount} đã chi"
     edit:
       setup_title: "Thiết lập ngân sách"
-      setup_description: "Nhập thu nhập hàng tháng và chi tiêu kế hoạch bên dưới để thiết lập ngân sách."
-      budgeted_spending: "Chi tiêu theo ngân sách"
       expected_income: "Thu nhập dự kiến"
-      autosuggest_title: "Tự động đề xuất ngân sách thu nhập & chi tiêu"
       autosuggest_description: "Dựa trên lịch sử giao dịch. AI có thể mắc lỗi, hãy xác minh trước khi tiếp tục."
       continue: "Tiếp tục"
     name:
@@ -63,11 +60,6 @@ vi:
       no_source: "Không tìm thấy ngân sách trước để sao chép"
       already_initialized: "Ngân sách này đã được thiết lập"
   budget_categories:
-    allocation_progress:
-      budget_exceeded_html: 'Vượt ngân sách <span class="text-red-500 privacy-sensitive">%{amount}</span>'
-      left_to_allocate: còn lại để phân bổ
-      over_set: "> 100% đã đặt"
-      percent_set: "%{percent} đã đặt"
     budget_category_form:
       monthly_average: "%{amount}/tháng tb"
       shared_placeholder: Chia sẻ
@@ -81,7 +73,6 @@ vi:
       new_category: "Danh mục mới"
     index:
       title: "Chỉnh sửa ngân sách danh mục"
-      description: "Điều chỉnh ngân sách danh mục để đặt giới hạn chi tiêu. Số tiền chưa phân bổ sẽ tự động gán là chưa phân loại."
     show:
       category: "Danh mục"
       overview: "Tổng quan"

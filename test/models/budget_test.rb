@@ -449,7 +449,7 @@ class BudgetTest < ActiveSupport::TestCase
     assert_nil budget.most_recent_initialized_budget
   end
 
-  test "copy_from copies budgeted_spending expected_income and matching category budgets" do
+  test "copy_from copies expected_income and matching category budgets, totalling the categories" do
     family = families(:dylan_family)
 
     # Use past months to avoid fixture conflict (fixture :one is at Date.current for dylan_family)
@@ -464,7 +464,8 @@ class BudgetTest < ActiveSupport::TestCase
     target_budget.copy_from!(source_budget)
     target_budget.reload
 
-    assert_equal 4000, target_budget.budgeted_spending
+    assert_equal 500, target_budget.budgeted_spending
+    assert_equal target_budget.allocated_spending, target_budget.budgeted_spending
     assert_equal 6000, target_budget.expected_income
 
     target_bc = target_budget.budget_categories.find_by(category: categories(:food_and_drink))
@@ -529,7 +530,8 @@ class BudgetTest < ActiveSupport::TestCase
 
     # Should not raise even though target doesn't have the temp category
     assert_nothing_raised { target_budget.copy_from!(source_budget) }
-    assert_equal 4000, target_budget.reload.budgeted_spending
+    target_budget.reload
+    assert_equal target_budget.allocated_spending, target_budget.budgeted_spending
   end
 
   test "copy_from leaves new categories at zero" do

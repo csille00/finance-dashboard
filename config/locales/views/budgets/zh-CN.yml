@@ -29,10 +29,7 @@ zh-CN:
       spent: 已花 %{amount}
     edit:
       setup_title: 设置您的预算
-      setup_description: 在下方输入您的月收入和计划支出以设置预算。
-      budgeted_spending: 预算支出
       expected_income: 预期收入
-      autosuggest_title: 自动建议收入与支出预算
       autosuggest_description: 这将基于交易历史。AI 可能出错，请在继续前核对。
       continue: 继续
     name:
@@ -79,11 +76,6 @@ zh-CN:
     bills_reserved_unconvertible:
       one: 1 笔账单未预留，无可用汇率
       other: "%{count} 笔账单未预留，无可用汇率"
-    allocation_progress:
-      budget_exceeded_html: '预算超出 <span class="text-red-500 privacy-sensitive">%{amount}</span>'
-      left_to_allocate: 待分配
-      over_set: 超过 100%
-      percent_set: 已设置 %{percent}
     budget_category:
       rolled_over: "+%{amount} 已结转"
     budget_category_form:
@@ -119,7 +111,6 @@ zh-CN:
       new_category: 新分类
     index:
       title: 编辑您的分类预算
-      description: 调整分类预算以设置支出限额。未分配资金将自动归入未分类。
     show:
       category: 分类
       overview: 概览

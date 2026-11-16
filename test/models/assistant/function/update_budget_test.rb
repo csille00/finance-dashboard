@@ -20,27 +20,45 @@ class Assistant::Function::UpdateBudgetTest < ActiveSupport::TestCase
     refute @function.strict_mode?
   end
 
-  test "params_schema declares month totals and categories as optional" do
+  test "params_schema declares month income and categories as optional" do
     schema = @function.params_schema
     assert schema[:properties].key?(:month)
-    assert schema[:properties].key?(:budgeted_spending)
+    refute schema[:properties].key?(:budgeted_spending)
     assert schema[:properties].key?(:expected_income)
     assert schema[:properties].key?(:categories)
     assert_empty schema[:required]
   end
 
-  test "updates totals for the current month by default" do
-    result = @function.call(
-      "budgeted_spending" => 6500,
-      "expected_income" => 9000
-    )
+  test "updates expected income for the current month by default" do
+    result = @function.call("expected_income" => 9000)
 
     assert_equal true, result[:success]
     assert_equal @budget.to_param, result[:month]
+    assert_equal 9000, @budget.reload.expected_income
+  end
 
+  test "rejects setting the total directly because it is derived from categories" do
+    original = @budget.budgeted_spending
+
+    result = @function.call("budgeted_spending" => 6500)
+
+    assert_equal false, result[:success]
+    assert_equal "invalid_params", result[:error]
+    assert_match(/sum of the top-level category amounts/, result[:message])
+    assert_equal original, @budget.reload.budgeted_spending
+  end
+
+  test "category changes set the total to the sum of top-level category amounts" do
+    @budget.sync_budget_categories
+
+    result = @function.call(
+      "categories" => [ { "category" => "Food & Drink", "amount" => 9000 } ]
+    )
+
+    assert_equal true, result[:success]
     @budget.reload
-    assert_equal 6500, @budget.budgeted_spending
-    assert_equal 9000, @budget.expected_income
+    assert_equal @budget.allocated_spending, @budget.budgeted_spending
+    assert_operator @budget.budgeted_spending, :>=, 9000
   end
 
   test "sets a category allocation by case-insensitive name" do
@@ -82,31 +100,12 @@ class Assistant::Function::UpdateBudgetTest < ActiveSupport::TestCase
 
     result = @function.call(
       "month" => target.strftime("%Y-%m"),
-      "budgeted_spending" => 1000
+      "expected_income" => 1000
     )
 
     assert_equal true, result[:success]
     created = @family.budgets.find_by(start_date: target)
-    assert_equal 1000, created.budgeted_spending
-    assert_equal 0, created.expected_income
-  end
-
-  test "setting spending alone fills a missing expected income with zero" do
-    @budget.update!(expected_income: nil)
-
-    result = @function.call("budgeted_spending" => 4000)
-
-    assert_equal true, result[:success]
-    @budget.reload
-    assert_equal 4000, @budget.budgeted_spending
-    assert_equal 0, @budget.expected_income
-  end
-
-  test "setting spending alone keeps an existing expected income" do
-    result = @function.call("budgeted_spending" => 4000)
-
-    assert_equal true, result[:success]
-    assert_equal 7000, @budget.reload.expected_income
+    assert_equal 1000, created.expected_income
   end
 
   test "rejects a category outside the family and rolls back totals from the same call" do
@@ -116,16 +115,16 @@ class Assistant::Function::UpdateBudgetTest < ActiveSupport::TestCase
       color: "#e99537",
       lucide_icon: "tag"
     )
-    original = @budget.budgeted_spending
+    original = @budget.expected_income
 
     result = @function.call(
-      "budgeted_spending" => 9999,
+      "expected_income" => 9999,
       "categories" => [ { "category" => other_family_category.id, "amount" => 10 } ]
     )
 
     assert_equal false, result[:success]
     assert_equal "invalid_params", result[:error]
-    assert_equal original, @budget.reload.budgeted_spending
+    assert_equal original, @budget.reload.expected_income
   end
 
   test "does not leave a bootstrapped budget behind when a later entry is invalid" do
@@ -134,7 +133,7 @@ class Assistant::Function::UpdateBudgetTest < ActiveSupport::TestCase
 
     result = @function.call(
       "month" => target.strftime("%Y-%m"),
-      "budgeted_spending" => 1000,
+      "expected_income" => 1000,
       "categories" => [ { "category" => "No Such Category", "amount" => 10 } ]
     )
 
@@ -195,7 +194,7 @@ class Assistant::Function::UpdateBudgetTest < ActiveSupport::TestCase
     @budget.sync_budget_categories
 
     [ Float::NAN, Float::INFINITY ].each do |value|
-      result = @function.call("budgeted_spending" => value)
+      result = @function.call("expected_income" => value)
       assert_equal false, result[:success]
       assert_equal "invalid_params", result[:error]
 
@@ -206,7 +205,7 @@ class Assistant::Function::UpdateBudgetTest < ActiveSupport::TestCase
   end
 
   test "rejects malformed months" do
-    result = @function.call("month" => "never", "budgeted_spending" => 1)
+    result = @function.call("month" => "never", "expected_income" => 1)
 
     assert_equal false, result[:success]
     assert_equal "invalid_params", result[:error]
@@ -215,7 +214,7 @@ class Assistant::Function::UpdateBudgetTest < ActiveSupport::TestCase
   test "rejects months outside the valid budget range" do
     far_future = (Date.current + 10.years).strftime("%Y-%m")
 
-    result = @function.call("month" => far_future, "budgeted_spending" => 1)
+    result = @function.call("month" => far_future, "expected_income" => 1)
 
     assert_equal false, result[:success]
     assert_equal "invalid_month", result[:error]

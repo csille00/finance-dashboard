@@ -1,11 +1,6 @@
 ---
 ru:
   budget_categories:
-    allocation_progress:
-      budget_exceeded_html: Бюджет превышен на <span class="text-destructive privacy-sensitive">%{amount}</span>
-      left_to_allocate: осталось распределить
-      over_set: "> 100% установлено"
-      percent_set: "%{percent} установлено"
     budget_category_form:
       monthly_average: "В среднем %{amount}/мес."
       shared_placeholder: Общий
@@ -15,8 +10,6 @@ ru:
     confirm_button:
       confirm: Подтвердить
     index:
-      description: Настройте бюджеты категорий, чтобы установить лимиты расходов.
-        Нераспределенные средства будут автоматически отнесены к некатегоризированным.
       title: Редактировать бюджеты категорий
     no_categories:
       new_category: Новая категория
@@ -98,12 +91,8 @@ ru:
     edit:
       autosuggest_description: Это будет основано на истории операций. ИИ может ошибаться,
         проверьте перед продолжением.
-      autosuggest_title: Автоподсказка дохода и бюджета расходов
-      budgeted_spending: Запланированные расходы
       continue: Продолжить
       expected_income: Ожидаемый доход
-      setup_description: Введите ваш ежемесячный доход и планируемые расходы ниже,
-        чтобы настроить бюджет.
       setup_title: Настройка бюджета
     name:
       custom_range: "%{start} - %{end_date}"

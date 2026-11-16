@@ -1,12 +1,6 @@
 ---
 tr:
   budget_categories:
-    allocation_progress:
-      budget_exceeded_html: Bütçe <span class="text-red-500 privacy-sensitive">%{amount}</span>
-        kadar aşıldı
-      left_to_allocate: tahsis edilmeyi bekliyor
-      over_set: "> %100 ayarlandı"
-      percent_set: "%{percent} ayarlandı"
     budget_category_form:
       monthly_average: "%{amount}/ay ort."
       shared_placeholder: Paylaşılan
@@ -16,8 +10,6 @@ tr:
     confirm_button:
       confirm: Onayla
     index:
-      description: Harcama limitlerini belirlemek için kategori bütçelerini ayarlayın.
-        Tahsis edilmeyen tutarlar otomatik olarak kategorisiz olarak atanacaktır.
       title: Kategori bütçelerinizi düzenleyin
     no_categories:
       new_category: Yeni kategori
@@ -97,12 +89,8 @@ tr:
     edit:
       autosuggest_description: Bu, işlem geçmişinize dayanacaktır. Yapay zeka hata
         yapabilir, devam etmeden önce doğrulayın.
-      autosuggest_title: Gelir ve harcama bütçesini otomatik öner
-      budgeted_spending: Bütçelenen harcama
       continue: Devam et
       expected_income: Beklenen gelir
-      setup_description: Bütçenizi kurmak için aşağıya aylık kazancınızı ve planlanan
-        harcamanızı girin.
       setup_title: Bütçenizi kurun
     name:
       custom_range: "%{start} - %{end_date}"

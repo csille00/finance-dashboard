@@ -319,6 +319,8 @@ class Budget < ApplicationRecord
         )
       end
 
+      sync_budgeted_spending_to_allocations!
+
       # Copying the toggle changes what the chain should hold, and this runs
       # after find_or_bootstrap already recomputed it. Recompute again so the
       # target doesn't sit on a zero carry until the next page load.
@@ -478,6 +480,34 @@ class Budget < ApplicationRecord
   # =============================================================================
   def allocated_spending
     budget_categories.reject { |bc| bc.subcategory? }.sum(&:budgeted_spending)
+  end
+
+  # The monthly total is built from the envelopes, not entered up front: it is
+  # always the sum of the top-level category amounts, so setting a category
+  # can never over-allocate the budget.
+  def sync_budgeted_spending_to_allocations!
+    self.class.transaction do
+      lock_row!
+
+      self.budgeted_spending = BudgetCategory.joins(:category)
+                                             .where(budget_id: id, categories: { parent_id: nil })
+                                             .sum(:budgeted_spending)
+      # The in-memory total may be stale, so a recomputed value equal to it can
+      # still differ from the stored one.
+      budgeted_spending_will_change!
+      save!
+    end
+  end
+
+  # Row lock rather than lock!, which would reload and drop unsaved attributes.
+  # Writers take this before any of the budget's category rows so concurrent
+  # category edits serialize on it in a consistent order.
+  def lock_row!
+    self.class.lock_rows!([ id ])
+  end
+
+  def self.lock_rows!(ids)
+    where(id: ids).order(:id).lock.pluck(:id)
   end
 
   def allocated_percent
