@@ -14,6 +14,15 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :ok
   end
 
+  test "dashboard defers the mobile account sidebar to a lazy frame" do
+    get root_path
+
+    assert_response :ok
+    assert_select "turbo-frame#mobile_account_sidebar[loading='lazy'][src='#{account_sidebar_path(path: root_path)}']"
+    assert_select "turbo-frame#mobile_account_sidebar *", count: 0
+    assert_select "[id^='mobile_asset_'], [id^='mobile_all_'], [id^='mobile_liability_']", count: 0
+  end
+
   test "dashboard renders the net worth chart as drag-selectable, opting it out of card drag-and-drop" do
     get root_path
 

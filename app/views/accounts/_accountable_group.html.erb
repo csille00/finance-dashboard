@@ -1,7 +1,7 @@
 <%# locals: (account_group:, mobile: false, all_tab: false, open: nil, sortable: false, reconciliation_indicators: {}, **args) %>
 
 <div id="<%= account_group.dom_id(tab: all_tab ? :all : nil, mobile: mobile) %>" data-group-key="<%= account_group.key %>">
-  <% is_open = open.nil? ? (account_group.accounts.any? { |account| page_active?(account_path(account)) } || Current.user.always_expanded_account_group?(account_group.key)) : open %>
+  <% is_open = open.nil? ? (account_group.accounts.any? { |account| account.id.to_s == sidebar_active_account_id } || Current.user.always_expanded_account_group?(account_group.key)) : open %>
   <%= render DS::Disclosure.new(align: :left, open: is_open) do |disclosure| %>
     <% disclosure.with_summary_content do %>
       <div class="flex items-center gap-3">
@@ -58,12 +58,13 @@
             }
           ) %>
         <% end %>
+        <% active_account = account.id.to_s == sidebar_active_account_id %>
         <%= link_to account_path(account),
                   class: class_names(
                     "block flex items-center gap-2 px-3 py-2 rounded-lg min-w-0 grow",
-                    page_active?(account_path(account)) ? "bg-container" : "hover:bg-surface-hover"
+                    active_account ? "bg-container" : "hover:bg-surface-hover"
                   ),
-                  data: page_active?(account_path(account)) ? { active_account: true } : {},
+                  data: active_account ? { active_account: true } : {},
                   title: account.name do %>
           <%= render "accounts/logo", account: account, size: "sm", color: account_group.color, reconciliation_indicator: reconciliation_indicators[account.id] %>
 
