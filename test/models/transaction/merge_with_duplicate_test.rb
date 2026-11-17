@@ -436,4 +436,16 @@ class Transaction::MergeWithDuplicateTest < ActiveSupport::TestCase
     assert @pending_entry.transaction.merge_with_duplicate!
     assert_equal users(:family_admin).id, @posted_entry.reload.hidden_by_id
   end
+
+  test "hides a posted split parent's lines when merging a hidden pending purchase" do
+    @posted_entry.split!([
+      { name: "Part A", amount: 6, category_id: nil },
+      { name: "Part B", amount: 4, category_id: nil }
+    ])
+    @pending_entry.hide_from_household!(users(:family_admin))
+
+    assert @pending_entry.transaction.merge_with_duplicate!
+    assert @posted_entry.child_entries.reload.all? { |child| child.hidden_by_id == users(:family_admin).id }
+    assert_empty Entry.visible_to(users(:family_member)).where(id: @posted_entry.child_entries.select(:id))
+  end
 end

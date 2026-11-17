@@ -678,7 +678,8 @@ class Transaction < ApplicationRecord
       to.tags << new_tags if new_tags.any?
 
       if from.entry.hidden? && !to.entry.hidden?
-        to.entry.update_columns(hidden_by_id: from.entry.hidden_by_id, updated_at: Time.current)
+        Entry.where(id: to.entry.id).or(Entry.where(parent_entry_id: to.entry.id))
+          .update_all(hidden_by_id: from.entry.hidden_by_id, updated_at: Time.current)
       end
     end
 
