@@ -45,6 +45,8 @@ let
 
   # Only what the Rails app needs; the mobile/desktop clients, Helm charts and
   # test suites would otherwise rebuild the package whenever they change.
+  # docs/ stays: the app reads docs/onboarding (Settings -> Guides and its
+  # images, which are precompiled assets) and docs/api (the API docs UI).
   root = ../.;
   src = lib.fileset.toSource {
     inherit root;
@@ -61,7 +63,6 @@ let
           ../design
           ../spec
           ../test
-          ../docs
           ../node_modules
           ../tmp
           ../log
