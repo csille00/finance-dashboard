@@ -463,4 +463,13 @@ class EntryTest < ActiveSupport::TestCase
       entry.hide_from_household!(users(:family_admin))
     end
   end
+
+  test "a hidden transaction can be unhidden after it becomes a transfer" do
+    entry = entries(:transaction)
+    entry.hide_from_household!(users(:family_admin))
+    entry.entryable.update!(kind: "funds_movement")
+
+    entry.reload.unhide!
+    assert_not entry.reload.hidden?
+  end
 end

@@ -823,7 +823,7 @@ class Entry < ApplicationRecord
 
   private
     def update_hidden_by!(user)
-      raise ActiveRecord::RecordInvalid.new(self) unless hideable?
+      raise ActiveRecord::RecordInvalid.new(self) unless user.nil? || hideable?
 
       self.class.transaction do
         update!(hidden_by: user)
