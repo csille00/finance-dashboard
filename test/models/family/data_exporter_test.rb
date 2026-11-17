@@ -1291,6 +1291,16 @@ class Family::DataExporterTest < ActiveSupport::TestCase
     end
   end
 
+
+  test "leaves hidden transactions out of the export" do
+    entry = entries(:transaction)
+    entry.update!(name: "Secret Necklace Shop")
+    entry.hide_from_household!(users(:family_admin))
+
+    assert_not_includes @exporter.send(:generate_transactions_csv), "Secret Necklace Shop"
+    assert_not @exporter.send(:ndjson_exportable_transactions).exists?(id: entry.entryable_id)
+  end
+
   private
 
     def create_transaction_entry(account, amount:, date:, name:)

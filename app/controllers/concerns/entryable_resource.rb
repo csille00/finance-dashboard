@@ -45,10 +45,7 @@ module EntryableResource
     end
 
     def set_entry
-      @entry = Current.family.entries
-                 .joins(:account)
-                 .merge(Account.accessible_by(Current.user))
-                 .find(params[:id])
+      @entry = Current.accessible_entries.find(params[:id])
     end
 
     def entry_permission

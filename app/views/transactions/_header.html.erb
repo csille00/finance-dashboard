@@ -31,6 +31,15 @@
         ) %>
       <% end %>
       <%= render "transactions/reconcile_badge", entry: entry %>
+      <% if entry.hidden? %>
+        <%= render DS::Pill.new(
+          label: t("transactions.transaction.hidden_pill"),
+          tone: :neutral,
+          marker: false,
+          icon: "eye-off",
+          title: t("transactions.transaction.hidden_pill_tooltip")
+        ) %>
+      <% end %>
     </div>
   </div>
 </div>

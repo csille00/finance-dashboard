@@ -90,4 +90,14 @@ class Assistant::Function::UpdateTransactionTest < ActiveSupport::TestCase
     assert_equal "not_authorized", rename_result[:error]
     assert_equal "Payment received from checking account", transaction.reload.entry.name
   end
+
+  test "can't update a transaction another member hid" do
+    @transaction.entry.hide_from_household!(users(:family_member))
+
+    result = @function.call("id" => @transaction.id, "notes" => "peek")
+
+    assert_equal false, result[:success]
+    assert_equal "not_found", result[:error]
+    assert Transaction.exists?(@transaction.id)
+  end
 end

@@ -132,6 +132,17 @@ module TransactionsHelper
   # - the Brandfetch settings that shape logo URLs
   #
   # Add a file to TRANSACTION_ROW_SOURCES when the row starts rendering it.
+  # Hidden transactions only ever render for the member who hid them; this
+  # keeps the detail masked on their screen until they click the eye.
+  def hidden_entry_value(entry, value, masked: "•••")
+    return value unless entry.hidden?
+
+    safe_join([
+      tag.span(masked, data: { hidden_entry_target: "masked" }),
+      tag.span(value, class: "hidden", data: { hidden_entry_target: "revealed" })
+    ])
+  end
+
   def transaction_row_cache_key(entry, view_ctx:, in_split_group:)
     transaction = entry.entryable
     transfer = transaction.transfer

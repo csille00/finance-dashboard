@@ -384,6 +384,7 @@ class Family < ApplicationRecord
   def assigned_merchants_for(user)
     merchant_ids = Transaction.joins(:entry)
       .where(entries: { account_id: accounts.accessible_by(user).select(:id) })
+      .merge(Entry.visible_to(user))
       .where.not(merchant_id: nil)
       .distinct
       .pluck(:merchant_id)
@@ -404,6 +405,7 @@ class Family < ApplicationRecord
   def available_merchants_for(user)
     assigned_ids = Transaction.joins(:entry)
       .where(entries: { account_id: accounts.accessible_by(user).select(:id) })
+      .merge(Entry.visible_to(user))
       .where.not(merchant_id: nil)
       .distinct
       .pluck(:merchant_id)

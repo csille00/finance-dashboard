@@ -130,6 +130,7 @@ class Assistant::Function::DeleteTransaction < Assistant::Function
       query = family.transactions
         .joins(entry: :account)
         .merge(Account.writable_by(user))
+        .merge(Entry.visible_to(user))
 
       if account_id.present?
         return nil unless valid_uuid?(account_id)

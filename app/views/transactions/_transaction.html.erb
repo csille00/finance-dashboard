@@ -16,7 +16,7 @@
 <%= turbo_frame_tag dom_id(entry) do %>
   <%= turbo_frame_tag dom_id(transaction) do %>
     <div class="group group/transaction flex lg:grid lg:grid-cols-12 items-center text-primary text-sm font-medium p-3 lg:p-4 [html[data-layout-animating]_&:not(:has([aria-expanded=true])):not(:has([role=tooltip]:not(.hidden)))]:[content-visibility:auto] [contain-intrinsic-size:auto_--spacing(18)] <%= "pl-8 lg:pl-12" if in_split_group %>"
-         data-controller="clickable-row"
+         data-controller="<%= class_names("clickable-row", "hidden-entry": entry.hidden?) %>"
          data-action="click->clickable-row#open">
 
       <div class="pr-4 lg:pr-10 flex items-center gap-3 lg:gap-4 col-span-5 min-w-0 max-md:flex-1">
@@ -37,7 +37,7 @@
             <%= image_tag Setting.transform_brand_fetch_url(transaction_security_logo_url),
                 class: "w-5 h-5 rounded-full absolute -bottom-1 -right-1 border border-secondary pointer-events-none",
                 loading: "lazy" %>
-          <% elsif transaction.merchant&.logo_url.present? %>
+          <% elsif transaction.merchant&.logo_url.present? && !entry.hidden? %>
             <%= image_tag Setting.transform_brand_fetch_url(transaction.merchant.logo_url),
                 class: "w-5 h-5 rounded-full absolute -bottom-1 -right-1 border border-secondary pointer-events-none",
                 loading: "lazy" %>
@@ -54,6 +54,8 @@
                   size: "lg",
                   rounded: true
                 ) %>
+              <% elsif entry.hidden? %>
+                <%= render DS::FilledIcon.new(icon: "eye-off", size: "lg", rounded: true) %>
               <% elsif transaction_security_logo_url.present? %>
                 <%= image_tag Setting.transform_brand_fetch_url(transaction_security_logo_url),
                     class: "w-9 h-9 rounded-full border border-secondary",
@@ -79,7 +81,7 @@
                 <div class="flex items-center gap-1 min-w-0" data-tag-fit-bounds="0.5">
                   <div class="truncate flex-shrink">
                     <%= link_to(
-                          entry.name,
+                          hidden_entry_value(entry, entry.name, masked: t("transactions.transaction.hidden_name")),
                           open_path,
                           data: {
                             turbo_frame: "drawer",
@@ -176,7 +178,7 @@
                   <% else %>
                     <% if transaction.merchant&.present? %>
                       <span class="hidden lg:inline truncate">
-                        <%= transaction.merchant.name %><%= link_to merchant_path(transaction.merchant),
+                        <%= hidden_entry_value(entry, transaction.merchant.name) %><%= link_to merchant_path(transaction.merchant),
                               data: { turbo_frame: "_top" },
                               class: "opacity-0 group-hover/transaction:opacity-100 focus-visible:opacity-100 transition-opacity inline-flex align-middle hover:text-primary",
                               title: t("transactions.transaction.view_merchant") do %>
@@ -193,7 +195,7 @@
                     <div class="flex min-w-0 items-center gap-1">
                       <%= render "categories/category_name_mobile", transaction: transaction %>
                         <% if transaction.merchant&.present? %>
-                        <span class="lg:hidden min-w-0 truncate">• <%= transaction.merchant.name %></span>
+                        <span class="lg:hidden min-w-0 truncate">• <%= hidden_entry_value(entry, transaction.merchant.name) %></span>
                       <% end %>
                     </div>
                   <% end %>
@@ -265,9 +267,31 @@
                   <%= icon "lock", size: "sm", class: "text-secondary" %>
                 <% end %>
               <% end %>
+              <% if entry.hidden? %>
+                <%= tag.span(data: { hidden_entry_target: "revealButton" }) do %>
+                  <%= render DS::Button.new(
+                    variant: :icon,
+                    size: :sm,
+                    icon: "eye",
+                    title: t("transactions.transaction.reveal_hidden"),
+                    aria: { label: t("transactions.transaction.reveal_hidden") },
+                    data: { action: "hidden-entry#toggle" }
+                  ) %>
+                <% end %>
+                <%= tag.span(class: "hidden", data: { hidden_entry_target: "concealButton" }) do %>
+                  <%= render DS::Button.new(
+                    variant: :icon,
+                    size: :sm,
+                    icon: "eye-off",
+                    title: t("transactions.transaction.conceal_hidden"),
+                    aria: { label: t("transactions.transaction.conceal_hidden") },
+                    data: { action: "hidden-entry#toggle" }
+                  ) %>
+                <% end %>
+              <% end %>
               <%= content_tag :p,
-                  transaction.transfer? && view_ctx == "global" ? "+/- #{format_money(entry.amount_money.abs)}" : format_money(-entry.amount_money),
-                  class: ["privacy-sensitive shrink-0", "text-green-600": entry.amount.negative?] %>
+                  hidden_entry_value(entry, transaction.transfer? && view_ctx == "global" ? "+/- #{format_money(entry.amount_money.abs)}" : format_money(-entry.amount_money)),
+                  class: ["privacy-sensitive shrink-0", "text-green-600": entry.amount.negative? && !entry.hidden?] %>
             </div>
           </div>
         </div>

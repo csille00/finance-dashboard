@@ -27,9 +27,12 @@ class Goal::WithdrawalDetector
   # that member's business — surfacing them here would name the account, its
   # spending and roughly its size to someone with no access to it. Defaults to
   # every linked account for callers with no viewer to speak for (jobs, tests).
-  def initialize(goal, accounts: nil)
+  # `viewer:` keeps out transactions another member has hidden; with no viewer
+  # every hidden transaction stays out.
+  def initialize(goal, accounts: nil, viewer: nil)
     @goal = goal
     @accounts = accounts
+    @viewer = viewer
   end
 
   # Outflows on this goal's accounts that nothing has claimed yet, newest
@@ -48,7 +51,7 @@ class Goal::WithdrawalDetector
   end
 
   private
-    attr_reader :goal
+    attr_reader :goal, :viewer
 
     def accounts
       @accounts ||= goal.linked_accounts
@@ -58,6 +61,7 @@ class Goal::WithdrawalDetector
       Entry
         .joins("INNER JOIN transactions ON transactions.id = entries.entryable_id AND entries.entryable_type = 'Transaction'")
         .where(account_id: accounts.map(&:id))
+        .merge(viewer ? Entry.visible_to(viewer) : Entry.where(hidden_by_id: nil))
         .where(excluded: false)
         .where(date: LOOKBACK_DAYS.days.ago.to_date..Date.current)
         # In Sure an inflow carries a NEGATIVE amount, so an outflow is the

@@ -69,7 +69,14 @@ en:
       new_transaction: New transaction
     transaction_category:
       set_on_outflow: "The category belongs to the outgoing side of this transfer and can only be changed there"
+    visibilities:
+      update:
+        hidden: Transaction hidden from your household
+        unhidden: Transaction visible to your household again
     show:
+      privacy: Privacy
+      hide_from_household: Hide from household
+      hide_from_household_description: Only you will see this transaction. Its amount still counts toward budgets and totals, but other members won't see the merchant, name or amount.
       category_set_on_hidden_outflow: "This is the incoming side of a transfer. Its category belongs to the outgoing side, on an account you cannot access, and can only be changed there."
       category_set_on_outflow: "This is the incoming side of a transfer. Its category belongs to the outgoing side and can only be changed there, so budgets count it once."
       keep_both: No, keep both
@@ -198,6 +205,11 @@ en:
       transfer_hint_dismiss: Not a transfer
       transfer_hint_tooltip: A matching transaction in another account looks like the other side of a transfer — click to match them
       view_merchant: View merchant
+      hidden_name: Hidden purchase
+      hidden_pill: Hidden
+      hidden_pill_tooltip: Only you can see this transaction. It still counts toward budgets and totals.
+      reveal_hidden: Reveal merchant and amount
+      conceal_hidden: Hide merchant and amount
     merge_duplicate:
       success: Transactions merged successfully
       failure: Could not merge transactions

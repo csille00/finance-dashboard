@@ -74,6 +74,7 @@ class PendingDuplicateMergesController < ApplicationController
       @transaction.entry.account.entries
         .joins("INNER JOIN transactions ON transactions.id = entries.entryable_id AND entries.entryable_type = 'Transaction'")
         .where(id: entry_id)
+        .merge(Entry.visible_to(Current.user))
         .where(currency: @transaction.entry.currency)
         .where.not(id: @transaction.entry.id)
         .where(Transaction.not_pending_sql)

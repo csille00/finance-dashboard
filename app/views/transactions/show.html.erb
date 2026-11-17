@@ -283,6 +283,26 @@
       <% end %>
     <% end %>
 
+    <% if can_annotate_entry? && @entry.hideable? && @entry.parent_entry_id.nil? %>
+      <% dialog.with_section(title: t(".privacy"), open: @entry.hidden?) do %>
+        <div class="pb-4">
+          <%= styled_form_with model: @entry,
+                url: transaction_visibility_path(@entry),
+                method: :patch,
+                class: "p-3",
+                data: { controller: "auto-submit-form", turbo_frame: "_top" } do |f| %>
+            <div class="flex cursor-pointer items-center gap-4 justify-between">
+              <div class="text-sm space-y-1">
+                <h4 class="text-primary"><%= t(".hide_from_household") %></h4>
+                <p class="text-secondary"><%= t(".hide_from_household_description") %></p>
+              </div>
+              <%= f.toggle :hidden, { checked: @entry.hidden?, data: { auto_submit_form_target: "auto" } } %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+
     <% if can_edit_entry? %>
       <% dialog.with_section(title: t(".settings")) do %>
         <% unless @entry.split_parent? %>

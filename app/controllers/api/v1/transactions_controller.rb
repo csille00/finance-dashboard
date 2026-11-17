@@ -17,6 +17,7 @@ class Api::V1::TransactionsController < Api::V1::BaseController
       .select(:id)
     transactions_query = family.transactions
       .joins(:entry).where(entries: { account_id: accessible_account_ids })
+      .merge(Entry.visible_to(current_resource_owner))
 
     # Apply filters
     transactions_query = apply_filters(transactions_query)

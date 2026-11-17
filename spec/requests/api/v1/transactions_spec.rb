@@ -89,7 +89,7 @@ RSpec.describe 'API V1 Transactions', type: :request do
     get 'List transactions' do
       tags 'Transactions'
       security [ { apiKeyAuth: [] } ]
-      description 'Returns global ledger history for accessible accounts, including disabled accounts but excluding accounts pending deletion.'
+      description 'Returns global ledger history for accessible accounts, including disabled accounts but excluding accounts pending deletion. Transactions another household member has hidden are left out.'
       produces 'application/json'
       parameter name: :page, in: :query, type: :integer, required: false,
                 description: 'Page number (default: 1)'
@@ -275,6 +275,7 @@ RSpec.describe 'API V1 Transactions', type: :request do
     get 'Retrieve a transaction' do
       tags 'Transactions'
       security [ { apiKeyAuth: [] } ]
+      description 'Returns 404 for a transaction another household member has hidden.'
       produces 'application/json'
 
       let(:id) { transaction.id }

@@ -14,6 +14,7 @@ module Api::V1::TransactionLookup
       @transaction = family.transactions
         .joins(entry: :account)
         .merge(Account.accessible_by(current_resource_owner))
+        .merge(Entry.visible_to(current_resource_owner))
         .find(id)
       @entry = @transaction.entry
     rescue ActiveRecord::RecordNotFound

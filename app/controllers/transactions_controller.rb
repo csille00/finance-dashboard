@@ -23,7 +23,7 @@ class TransactionsController < ApplicationController
   def index
     @q = search_params
     @accessible_account_ids = Current.user.accessible_accounts.pluck(:id)
-    @search = Transaction::Search.new(Current.family, filters: @q, accessible_account_ids: @accessible_account_ids)
+    @search = Transaction::Search.new(Current.family, filters: @q, accessible_account_ids: @accessible_account_ids, viewer: Current.user)
 
     base_scope = @search.transactions_scope
                        .reverse_chronological
@@ -616,6 +616,7 @@ class TransactionsController < ApplicationController
       Current.family.transactions
         .joins(entry: :account)
         .merge(Account.accessible_by(Current.user))
+        .merge(Entry.visible_to(Current.user))
     end
 
     def duplicate_source

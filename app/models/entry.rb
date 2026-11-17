@@ -8,7 +8,7 @@ class Entry < ApplicationRecord
   # transfer matching never read them, so an edit limited to them doesn't need
   # an account sync. Reports and budgets pick such edits up through
   # Family#entries_cache_version, which the save itself bumps.
-  DESCRIPTIVE_ATTRIBUTES = %w[name notes updated_at].freeze
+  DESCRIPTIVE_ATTRIBUTES = %w[name notes hidden_by_id updated_at].freeze
   DESCRIPTIVE_TRANSACTION_ATTRIBUTES = %w[category_id merchant_id updated_at].freeze
 
   attr_accessor :unsplitting
@@ -20,6 +20,9 @@ class Entry < ApplicationRecord
   belongs_to :import, optional: true
   belongs_to :parent_entry, class_name: "Entry", optional: true
   belongs_to :reconciled_by_statement, class_name: "AccountStatement", optional: true
+  # A member can hide a transaction (a gift, say) from the rest of the
+  # household: only they see it listed, while totals and budgets still count it.
+  belongs_to :hidden_by, class_name: "User", optional: true
 
   # Mirrors chk_entries_reconciled_at_present_when_statement_set so a direct
   # assignment surfaces a validation error rather than a StatementInvalid.
@@ -180,6 +183,10 @@ class Entry < ApplicationRecord
   # Transactions "Uncategorized" filter lists — notably the budget-tracked
   # loan_payment / investment_contribution transfers the dashboard already
   # counts, which were previously uncategorizable from any surface (#2592).
+  scope :visible_to, ->(user) {
+    user ? where("entries.hidden_by_id IS NULL OR entries.hidden_by_id = ?", user.id) : all
+  }
+
   scope :uncategorized_transactions, -> {
     joins(:account)
       .joins("INNER JOIN transactions ON transactions.id = entries.entryable_id AND entries.entryable_type = 'Transaction'")
@@ -419,6 +426,28 @@ class Entry < ApplicationRecord
     Balance::TrendCalculator.new(self, entries, balances).trend
   end
 
+  def hideable?
+    transaction? && !entryable.transfer? && parent_entry_id.nil?
+  end
+
+  def hidden?
+    hidden_by_id.present?
+  end
+  alias_method :hidden, :hidden?
+
+  def hidden_from?(user)
+    hidden? && hidden_by_id != user&.id
+  end
+
+  # Split lines follow their parent so a split can't reveal a hidden purchase.
+  def hide_from_household!(user)
+    update_hidden_by!(user)
+  end
+
+  def unhide!
+    update_hidden_by!(nil)
+  end
+
   def linked?
     external_id.present?
   end
@@ -640,6 +669,7 @@ class Entry < ApplicationRecord
           import: import,
           import_locked: import_locked,
           excluded: TRUTHY_VALUES.include?(split_attrs[:excluded]),
+          hidden_by_id: hidden_by_id,
           entryable: child_transaction
         )
       end
@@ -792,6 +822,14 @@ class Entry < ApplicationRecord
   end
 
   private
+    def update_hidden_by!(user)
+      raise ActiveRecord::RecordInvalid.new(self) unless hideable?
+
+      self.class.transaction do
+        update!(hidden_by: user)
+        child_entries.update_all(hidden_by_id: user&.id, updated_at: Time.current)
+      end
+    end
     # Takes FOR UPDATE on the transaction row, then on this entry (lock! also reloads both), always
     # in that order so the split methods can't deadlock each other. Yields the transaction, or nil
     # for other entryables.
