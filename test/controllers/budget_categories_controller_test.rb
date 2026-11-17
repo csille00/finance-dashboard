@@ -98,6 +98,22 @@ class BudgetCategoriesControllerTest < ActionDispatch::IntegrationTest
     assert_select "p.text-secondary.text-xs.uppercase", text: "7. Mär"
   end
 
+  test "show links recent transactions to their detail drawer" do
+    @budget.update!(start_date: Date.current.beginning_of_month, end_date: Date.current.end_of_month)
+    entry = create_transaction(
+      date: Date.current,
+      account: accounts(:depository),
+      amount: 42,
+      category: @parent_category,
+      name: "Drilldown detail link"
+    )
+
+    get budget_budget_category_path(@budget, @parent_budget_category)
+
+    assert_response :success
+    assert_select "a[href='#{entry_path(entry)}'][data-turbo-frame='drawer']", text: "Drilldown detail link"
+  end
+
   test "show preserves the abbreviated English budget month" do
     ensure_tailwind_build
     users(:family_admin).update!(locale: "en")
