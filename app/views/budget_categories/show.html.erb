@@ -116,9 +116,9 @@
                         <%= l(transaction.entry.date, format: :short) %>
                       </p>
                       <%= link_to transaction.entry.name,
-                                  transactions_path,
+                                  transaction.transfer.present? ? transfer_path(transaction.transfer) : entry_path(transaction.entry),
                                   class: "text-primary hover:underline",
-                                  data: { turbo_frame: :_top } %>
+                                  data: { turbo_frame: "drawer", turbo_prefetch: false } %>
                     </div>
                     <p class="text-primary font-medium privacy-sensitive">
                       <%= format_money transaction.entry.amount_money %>
