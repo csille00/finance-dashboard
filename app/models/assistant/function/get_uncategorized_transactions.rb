@@ -140,6 +140,7 @@ class Assistant::Function::GetUncategorizedTransactions < Assistant::Function
     # investment contribution or a one-time row with no category is part of the gap.
     def uncategorized_entries(period, account_ids)
       Entry.uncategorized_transactions
+           .visible_to(user)
            .where(account_id: accessible_account_ids(account_ids))
            .where(entries: { date: period })
            # preload, not includes: the scope already carries a raw

@@ -10599,7 +10599,8 @@ paths:
       security:
       - apiKeyAuth: []
       description: Returns global ledger history for accessible accounts, including
-        disabled accounts but excluding accounts pending deletion.
+        disabled accounts but excluding accounts pending deletion. Transactions another
+        household member has hidden are left out.
       parameters:
       - name: page
         in: query
@@ -10827,6 +10828,7 @@ paths:
       - Transactions
       security:
       - apiKeyAuth: []
+      description: Returns 404 for a transaction another household member has hidden.
       responses:
         '200':
           description: transaction retrieved

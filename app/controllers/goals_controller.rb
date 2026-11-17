@@ -371,7 +371,7 @@ class GoalsController < ApplicationController
     end
 
     def withdrawal_detector
-      Goal::WithdrawalDetector.new(@goal, accounts: eligible_consumption_accounts)
+      Goal::WithdrawalDetector.new(@goal, accounts: eligible_consumption_accounts, viewer: Current.user)
     end
 
     def consumption_account(txn = nil)

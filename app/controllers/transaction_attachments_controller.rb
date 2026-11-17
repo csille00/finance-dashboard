@@ -91,6 +91,7 @@ class TransactionAttachmentsController < ApplicationController
       @transaction = Current.family.transactions
                        .joins(entry: :account)
                        .merge(Account.accessible_by(Current.user))
+                       .merge(Entry.visible_to(Current.user))
                        .find(params[:transaction_id])
     end
 

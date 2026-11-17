@@ -7,7 +7,7 @@ class PendingDuplicateMergesController < ApplicationController
     @offset = [ (params[:offset] || 0).to_i, 0 ].max
 
     # Fetch one extra to determine if there are more results
-    candidates = @transaction.pending_duplicate_candidates(limit: @limit + 1, offset: @offset).to_a
+    candidates = @transaction.pending_duplicate_candidates(limit: @limit + 1, offset: @offset).merge(Entry.visible_to(Current.user)).to_a
     @has_more = candidates.size > @limit
     @potential_duplicates = candidates.first(@limit)
 
@@ -74,6 +74,7 @@ class PendingDuplicateMergesController < ApplicationController
       @transaction.entry.account.entries
         .joins("INNER JOIN transactions ON transactions.id = entries.entryable_id AND entries.entryable_type = 'Transaction'")
         .where(id: entry_id)
+        .merge(Entry.visible_to(Current.user))
         .where(currency: @transaction.entry.currency)
         .where.not(id: @transaction.entry.id)
         .where(Transaction.not_pending_sql)

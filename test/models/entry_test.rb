@@ -419,4 +419,57 @@ class EntryTest < ActiveSupport::TestCase
     entry.update!(entryable_attributes: { id: entry.entryable_id, exchange_rate: 1.2 })
     assert entry.saved_changes_affect_balances?
   end
+
+  test "a hidden entry is visible only to the member who hid it" do
+    entry = entries(:transaction)
+    entry.hide_from_household!(users(:family_admin))
+
+    assert_includes Entry.visible_to(users(:family_admin)), entry
+    assert_not_includes Entry.visible_to(users(:family_member)), entry
+    assert entry.hidden_from?(users(:family_member))
+    assert_not entry.hidden_from?(users(:family_admin))
+  end
+
+  test "hidden entries still count toward income statement totals" do
+    family = families(:dylan_family)
+    period = Period.last_30_days
+    before = family.income_statement.expense_totals(period: period).total
+
+    entries(:transaction).hide_from_household!(users(:family_admin))
+    Rails.cache.clear
+
+    assert_equal before, family.income_statement.expense_totals(period: period).total
+  end
+
+  test "split lines inherit and follow their parent's hidden state" do
+    entry = entries(:transaction)
+    entry.hide_from_household!(users(:family_admin))
+    entry.split!([
+      { name: "Part A", amount: 6, category_id: nil },
+      { name: "Part B", amount: 4, category_id: nil }
+    ])
+
+    assert entry.child_entries.all? { |child| child.hidden_by_id == users(:family_admin).id }
+
+    entry.reload.unhide!
+    assert entry.child_entries.reload.none?(&:hidden?)
+  end
+
+  test "transfers can't be hidden" do
+    entry = entries(:transfer_out)
+    entry.entryable.update!(kind: "funds_movement")
+
+    assert_raises(ActiveRecord::RecordInvalid) do
+      entry.hide_from_household!(users(:family_admin))
+    end
+  end
+
+  test "a hidden transaction can be unhidden after it becomes a transfer" do
+    entry = entries(:transaction)
+    entry.hide_from_household!(users(:family_admin))
+    entry.entryable.update!(kind: "funds_movement")
+
+    entry.reload.unhide!
+    assert_not entry.reload.hidden?
+  end
 end

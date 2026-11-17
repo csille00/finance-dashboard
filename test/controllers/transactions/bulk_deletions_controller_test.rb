@@ -45,4 +45,12 @@ class Transactions::BulkDeletionsControllerTest < ActionDispatch::IntegrationTes
     assert_redirected_to transactions_url
     assert_equal "1 transaction deleted", flash[:notice]
   end
+
+  test "bulk delete skips transactions another member hid" do
+    @entry.hide_from_household!(users(:family_member))
+
+    assert_no_difference "Entry.count" do
+      post transactions_bulk_deletion_url, params: { bulk_delete: { entry_ids: [ @entry.id ] } }
+    end
+  end
 end

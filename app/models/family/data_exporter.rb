@@ -561,12 +561,14 @@ class Family::DataExporter
       lines.join("\n")
     end
 
+    # Exports are family-wide and any admin can start one, so transactions a
+    # member has hidden from the household stay out until they are unhidden.
     def exportable_transactions
-      @family.transactions.merge(Entry.excluding_split_parents)
+      @family.transactions.merge(Entry.excluding_split_parents).where(entries: { hidden_by_id: nil })
     end
 
     def ndjson_exportable_transactions
-      @family.transactions.joins(:entry).where(entries: { parent_entry_id: nil })
+      @family.transactions.joins(:entry).where(entries: { parent_entry_id: nil, hidden_by_id: nil })
     end
 
     def serialize_split_lines_for_export(parent_entry)

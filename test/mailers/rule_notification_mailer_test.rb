@@ -75,4 +75,21 @@ class RuleNotificationMailerTest < ActionMailer::TestCase
       RuleNotificationMailer.digest(rule: rule, transactions: [ txn ]).deliver_now
     end
   end
+
+  test "digest leaves out transactions hidden from the recipient" do
+    rule = rules(:one)
+    family = rule.family
+    admin = family.users.find_by(role: %w[admin super_admin])
+    other = family.users.where.not(id: admin.id).first
+    account = family.accounts.create!(name: "Mailer test", balance: 100, currency: "USD", accountable: Depository.new)
+    visible = create_transaction(date: Date.current, account: account, amount: 100, name: "Coffee")
+    hidden = create_transaction(date: Date.current, account: account, amount: 250, name: "Secret Necklace Shop")
+    hidden.hide_from_household!(other)
+
+    mail = RuleNotificationMailer.digest(rule: rule, transactions: [ visible.transaction, hidden.transaction ])
+
+    assert_match "Coffee", mail.body.encoded
+    assert_no_match "Secret Necklace Shop", mail.body.encoded
+    assert_nil RuleNotificationMailer.digest(rule: rule, transactions: [ hidden.transaction ]).message.to
+  end
 end

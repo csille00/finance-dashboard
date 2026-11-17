@@ -167,12 +167,14 @@ class Transaction::Search
   attribute :attachment_status, array: true
   attribute :active_accounts_only, :boolean, default: true
 
-  attr_reader :family, :accessible_account_ids
+  attr_reader :family, :accessible_account_ids, :viewer
 
-  # Initialize a transaction search with optional filters and accessible accounts
-  def initialize(family, filters: {}, accessible_account_ids: nil)
+  # Initialize a transaction search with optional filters and accessible accounts.
+  # A viewer leaves out the transactions other members have hidden from them.
+  def initialize(family, filters: {}, accessible_account_ids: nil, viewer: nil)
     @family = family
     @accessible_account_ids = accessible_account_ids
+    @viewer = viewer
     super(filters)
   end
 
@@ -184,6 +186,7 @@ class Transaction::Search
 
       # Scope to accessible accounts when provided (including an empty array, which should yield no results)
       query = query.where(entries: { account_id: accessible_account_ids }) unless accessible_account_ids.nil?
+      query = query.merge(Entry.visible_to(viewer)) if viewer
 
       query = apply_active_accounts_filter(query, active_accounts_only)
       query = self.class.apply_category_filter(query, categories, family)
@@ -287,6 +290,7 @@ class Transaction::Search
       ExchangeRate.maximum(:updated_at)&.to_i, # a rate stored later can complete the totals
       Digest::SHA256.hexdigest(family.tax_advantaged_account_ids.sort.to_json), # stable across processes
       accessible_account_ids ? Digest::SHA256.hexdigest(accessible_account_ids.sort.to_json) : "all",
+      viewer&.id || "any",
       Date.current # totals exclude scheduled entries as of "today" -- must roll over daily
     ].join("/")
   end

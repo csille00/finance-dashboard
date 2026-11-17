@@ -47,7 +47,8 @@ class MerchantsController < ApplicationController
       Transaction::Search.new(
         Current.family,
         filters: { **@q.symbolize_keys, merchants: [ @merchant.name ], **filters },
-        accessible_account_ids: @accessible_account_ids
+        accessible_account_ids: @accessible_account_ids,
+        viewer: Current.user
       )
     end
 

@@ -20,6 +20,7 @@ class BudgetCategoriesController < ApplicationController
     # A family that does not count investing as spending also leaves out
     # investment contributions (Family#analytics_excluded_kinds).
     @recent_transactions = @budget.transactions
+                                  .merge(Entry.visible_to(Current.user))
                                   .where.not(transactions: { kind: Current.family.analytics_excluded_kinds })
 
     if params[:id] == BudgetCategory.uncategorized.id

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_14_233000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_17_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -730,6 +730,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_233000) do
     t.string "source"
     t.datetime "updated_at", null: false
     t.boolean "user_modified", default: false, null: false
+    t.uuid "hidden_by_id"
     t.index "lower((name)::text)", name: "index_entries_on_lower_name"
     t.index ["account_id", "date", "entryable_id"], name: "index_entries_on_investment_totals_lookup", where: "(((entryable_type)::text = 'Trade'::text) AND (excluded = false))"
     t.index ["account_id", "date"], name: "index_entries_on_account_id_and_date"
@@ -740,6 +741,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_233000) do
     t.index ["currency", "amount", "date", "account_id"], name: "index_entries_on_transfer_match_lookup", where: "(((entryable_type)::text = 'Transaction'::text) AND (excluded = false))"
     t.index ["date"], name: "index_entries_on_date"
     t.index ["entryable_type"], name: "index_entries_on_entryable_type"
+    t.index ["hidden_by_id"], name: "index_entries_on_hidden_by_id", where: "(hidden_by_id IS NOT NULL)"
     t.index ["import_id"], name: "index_entries_on_import_id"
     t.index ["import_locked"], name: "index_entries_on_import_locked_true", where: "(import_locked = true)"
     t.index ["parent_entry_id"], name: "index_entries_on_parent_entry_id"
@@ -3177,6 +3179,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_233000) do
   add_foreign_key "entries", "account_statements", column: "reconciled_by_statement_id", on_delete: :nullify
   add_foreign_key "entries", "accounts", on_delete: :cascade
   add_foreign_key "entries", "entries", column: "parent_entry_id", on_delete: :cascade
+  add_foreign_key "entries", "users", column: "hidden_by_id", on_delete: :nullify
   add_foreign_key "entries", "imports"
   add_foreign_key "eval_results", "eval_runs"
   add_foreign_key "eval_results", "eval_samples"

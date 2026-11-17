@@ -23,7 +23,7 @@ class TransactionsController < ApplicationController
   def index
     @q = search_params
     @accessible_account_ids = Current.user.accessible_accounts.pluck(:id)
-    @search = Transaction::Search.new(Current.family, filters: @q, accessible_account_ids: @accessible_account_ids)
+    @search = Transaction::Search.new(Current.family, filters: @q, accessible_account_ids: @accessible_account_ids, viewer: Current.user)
 
     base_scope = @search.transactions_scope
                        .reverse_chronological
@@ -564,7 +564,7 @@ class TransactionsController < ApplicationController
 
   def name_suggestions
     unknown_names = LanguagesHelper::SUPPORTED_LOCALES.map { |locale| I18n.t("transactions.unknown_name", locale: locale) }
-    transactions = Current.family.transactions.merge(Account.accessible_by(Current.user)).where.not(entries: { name: unknown_names })
+    transactions = Current.family.transactions.merge(Account.accessible_by(Current.user)).merge(Entry.visible_to(Current.user)).where.not(entries: { name: unknown_names })
     query = params[:q].to_s.strip
 
     @suggestions = if query.length < Transaction::MIN_LENGTH_FOR_NAME_SUGGESTION
@@ -616,12 +616,13 @@ class TransactionsController < ApplicationController
       Current.family.transactions
         .joins(entry: :account)
         .merge(Account.accessible_by(Current.user))
+        .merge(Entry.visible_to(Current.user))
     end
 
     def duplicate_source
       return @duplicate_source if defined?(@duplicate_source)
       @duplicate_source = if params[:duplicate_entry_id].present?
-        source = Current.family.entries.joins(:account).merge(Account.accessible_by(Current.user)).find_by(id: params[:duplicate_entry_id])
+        source = Current.family.entries.joins(:account).merge(Account.accessible_by(Current.user)).visible_to(Current.user).find_by(id: params[:duplicate_entry_id])
         source if source&.transaction?
       end
     end

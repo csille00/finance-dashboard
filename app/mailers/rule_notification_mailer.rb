@@ -12,9 +12,12 @@ class RuleNotificationMailer < ApplicationMailer
     recipient = @family.users.find_by(role: %w[admin super_admin])
     return if recipient.nil?
 
+    @transactions = transactions.reject { |transaction| transaction.entry.hidden_from?(recipient) }
+    return if @transactions.empty?
+
     mail(
       to: recipient.email,
-      subject: t(".subject", count: transactions.size, product_name: product_name)
+      subject: t(".subject", count: @transactions.size, product_name: product_name)
     )
   end
 end

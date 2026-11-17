@@ -1451,6 +1451,25 @@ end
     assert_equal false, row["excluded"]
   end
 
+  test "leaves out transactions another member hid" do
+    member = users(:family_member)
+    member.api_keys.active.destroy_all
+    member_key = ApiKey.create!(user: member, name: "Member Key", scopes: [ "read" ], display_key: "test_member_#{SecureRandom.hex(8)}")
+    Redis.new.del("api_rate_limit:#{member_key.id}")
+    entry = entries(:transaction)
+    entry.hide_from_household!(@user)
+
+    get api_v1_transactions_url, params: { per_page: 100 }, headers: api_headers(member_key)
+    assert_response :success
+    assert_not_includes JSON.parse(response.body)["transactions"].map { |t| t["id"] }, entry.entryable_id
+
+    get api_v1_transaction_url(entry.entryable_id), headers: api_headers(member_key)
+    assert_response :not_found
+
+    get api_v1_transaction_url(entry.entryable_id), headers: api_headers(@api_key)
+    assert_response :success
+  end
+
   private
 
     def foreign_category

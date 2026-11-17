@@ -664,7 +664,8 @@ class Transaction < ApplicationRecord
 
   private
     # Moves the pending transaction's attachments (the attachment rows themselves, so the
-    # blobs are not purged with the pending entry) and adds its tags to the posted one.
+    # blobs are not purged with the pending entry), adds its tags to the posted one, and
+    # keeps a hidden purchase hidden.
     def carry_over_user_additions(from:, to:)
       if from.attachments.attached?
         # A blob already attached to the posted transaction would collide with the
@@ -675,6 +676,11 @@ class Transaction < ApplicationRecord
 
       new_tags = from.tags.where.not(id: to.tags.select(:id))
       to.tags << new_tags if new_tags.any?
+
+      if from.entry.hidden? && !to.entry.hidden?
+        Entry.where(id: to.entry.id).or(Entry.where(parent_entry_id: to.entry.id))
+          .update_all(hidden_by_id: from.entry.hidden_by_id, updated_at: Time.current)
+      end
     end
 
     def attachment_count_after_merge(from:, to:)

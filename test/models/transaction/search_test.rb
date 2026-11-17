@@ -1342,6 +1342,15 @@ class Transaction::SearchTest < ActiveSupport::TestCase
     assert_equal [ without_file.id ], without_ids
   end
 
+
+  test "a viewer doesn't find transactions other members hid from them" do
+    entry = create_transaction(account: @checking_account, amount: 50)
+    entry.hide_from_household!(users(:family_admin))
+
+    assert_includes Transaction::Search.new(@family, viewer: users(:family_admin)).transactions_scope, entry.entryable
+    assert_not_includes Transaction::Search.new(@family, viewer: users(:family_member)).transactions_scope, entry.entryable
+  end
+
   private
     # Attaches a small PDF to the transaction.
     def attach_file(transaction, filename: "invoice.pdf")

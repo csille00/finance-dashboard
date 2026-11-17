@@ -97,4 +97,14 @@ class Assistant::Function::DeleteTransactionTest < ActiveSupport::TestCase
     assert_equal true, result[:deleted]
     assert_match(/could not be enqueued/, result[:warning])
   end
+
+  test "can't delete a transaction another member hid" do
+    @transaction.entry.hide_from_household!(users(:family_member))
+
+    result = @function.call("id" => @transaction.id)
+
+    assert_equal false, result[:success]
+    assert_equal "not_found", result[:error]
+    assert Transaction.exists?(@transaction.id)
+  end
 end

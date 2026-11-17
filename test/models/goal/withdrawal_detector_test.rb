@@ -145,6 +145,15 @@ class Goal::WithdrawalDetectorTest < ActiveSupport::TestCase
     assert_equal [ posted.id ], detect.map(&:id)
   end
 
+  test "only offers a hidden outflow to the member who hid it" do
+    entry = outflow(1_200)
+    entry.hide_from_household!(users(:family_admin))
+
+    assert_empty detect
+    assert_empty Goal::WithdrawalDetector.new(@goal, viewer: users(:family_member)).unattributed_outflows
+    assert_equal [ entry.id ], Goal::WithdrawalDetector.new(@goal, viewer: users(:family_admin)).unattributed_outflows.map(&:id)
+  end
+
   private
     def detect(limit: 3)
       Goal::WithdrawalDetector.new(@goal).unattributed_outflows(limit: limit)
