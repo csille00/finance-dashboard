@@ -37,3 +37,47 @@ export function createChartTooltip(parent) {
   parent.appendChild(tooltip);
   return tooltip;
 }
+
+// Places a cursor-following tooltip beside the pointer, flipping it to the
+// other side when it would run past the viewport edge. Measures the rendered
+// tooltip, so call it after setting the content.
+export function positionChartTooltip(
+  tooltip,
+  { clientX, clientY },
+  { gap = 10, margin = 8 } = {},
+) {
+  const { width, height } = tooltip.getBoundingClientRect();
+  const viewportWidth = document.documentElement.clientWidth;
+  const viewportHeight = document.documentElement.clientHeight;
+
+  let x = clientX + gap;
+  if (x + width + margin > viewportWidth) x = clientX - gap - width;
+  x = Math.max(margin, Math.min(x, viewportWidth - width - margin));
+
+  let y = clientY - gap;
+  if (y + height + margin > viewportHeight) y = clientY + gap - height;
+  y = Math.max(margin, Math.min(y, viewportHeight - height - margin));
+
+  const origin = containingBlockOrigin(tooltip);
+  tooltip.style.left = `${x - origin.x}px`;
+  tooltip.style.top = `${y - origin.y}px`;
+}
+
+// Viewport position of the box that `left` / `top` are measured from.
+function containingBlockOrigin(tooltip) {
+  if (getComputedStyle(tooltip).position === "fixed") return { x: 0, y: 0 };
+
+  const parent = tooltip.offsetParent;
+  if (
+    !parent ||
+    (parent === document.body && getComputedStyle(parent).position === "static")
+  ) {
+    return { x: -window.scrollX, y: -window.scrollY };
+  }
+
+  const rect = parent.getBoundingClientRect();
+  return {
+    x: rect.left + parent.clientLeft - parent.scrollLeft,
+    y: rect.top + parent.clientTop - parent.scrollTop,
+  };
+}

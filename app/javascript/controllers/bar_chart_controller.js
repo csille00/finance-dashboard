@@ -1,6 +1,9 @@
 import { Controller } from "@hotwired/stimulus";
 import * as d3 from "d3";
-import { CHART_TOOLTIP_CLASSES } from "utils/chart_tooltip";
+import {
+  CHART_TOOLTIP_CLASSES,
+  positionChartTooltip,
+} from "utils/chart_tooltip";
 
 // Grouped bar chart used by the dashboard "money flow" widget — each month
 // shows an expense bar (red) and an income bar (green) side by side.
@@ -87,17 +90,8 @@ export default class extends Controller {
       .attr("class", `${CHART_TOOLTIP_CLASSES} opacity-0 top-0`);
 
     const showTooltip = (event, month, key) => {
-      const estimatedTooltipWidth = 200;
-      const pageWidth = document.body.clientWidth;
-      const tooltipX = event.pageX + 10;
-      const overflowX = tooltipX + estimatedTooltipWidth - pageWidth;
-      const adjustedX = overflowX > 0 ? event.pageX - overflowX - 20 : tooltipX;
-
-      tooltip
-        .html(this._tooltipTemplate(month, key))
-        .style("opacity", 1)
-        .style("left", `${adjustedX}px`)
-        .style("top", `${event.pageY - 10}px`);
+      tooltip.html(this._tooltipTemplate(month, key)).style("opacity", 1);
+      positionChartTooltip(tooltip.node(), event);
     };
 
     const hideTooltip = () => tooltip.style("opacity", 0);
