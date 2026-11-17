@@ -429,4 +429,11 @@ class Transaction::MergeWithDuplicateTest < ActiveSupport::TestCase
     assert_includes posted_tx.tags, reimbursable
     assert_equal "Lunch with client", @posted_entry.reload.notes
   end
+
+  test "keeps a hidden pending purchase hidden on the posted entry" do
+    @pending_entry.hide_from_household!(users(:family_admin))
+
+    assert @pending_entry.transaction.merge_with_duplicate!
+    assert_equal users(:family_admin).id, @posted_entry.reload.hidden_by_id
+  end
 end
