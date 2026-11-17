@@ -115,6 +115,7 @@ class RecurringOccurrencesController < ApplicationController
       sign = series.amount.negative? ? "entries.amount < 0" : "entries.amount > 0"
 
       scope = base
+        .visible_to(Current.user)
         .where(entryable_type: "Transaction")
         .where(currency: @occurrence.currency)
         .where(sign)

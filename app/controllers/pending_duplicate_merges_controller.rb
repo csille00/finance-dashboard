@@ -7,7 +7,7 @@ class PendingDuplicateMergesController < ApplicationController
     @offset = [ (params[:offset] || 0).to_i, 0 ].max
 
     # Fetch one extra to determine if there are more results
-    candidates = @transaction.pending_duplicate_candidates(limit: @limit + 1, offset: @offset).to_a
+    candidates = @transaction.pending_duplicate_candidates(limit: @limit + 1, offset: @offset).merge(Entry.visible_to(Current.user)).to_a
     @has_more = candidates.size > @limit
     @potential_duplicates = candidates.first(@limit)
 
